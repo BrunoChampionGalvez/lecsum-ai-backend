@@ -22,7 +22,7 @@ declare module 'mammoth' {
   }
 
   export interface Document {
-    children: any[];
+    children: unknown[];
   }
 
   export interface ExtractedResult {
@@ -30,7 +30,13 @@ declare module 'mammoth' {
     messages: { type: string; message: string }[];
   }
 
-  export function extractRawText(options: MammothOptions): Promise<ExtractedResult>;
-  export function convertToHtml(options: MammothOptions): Promise<ExtractedResult>;
-  export function convertToMarkdown(options: MammothOptions): Promise<ExtractedResult>;
+  export function extractRawText(
+    options: MammothOptions,
+  ): Promise<ExtractedResult>;
+  export function convertToHtml(
+    options: MammothOptions,
+  ): Promise<ExtractedResult>;
+  export function convertToMarkdown(
+    options: MammothOptions,
+  ): Promise<ExtractedResult>;
 }

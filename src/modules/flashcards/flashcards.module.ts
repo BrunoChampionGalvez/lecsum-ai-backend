@@ -26,11 +26,11 @@ import { FlashcardUsageInterceptor } from '../../interceptors/flashcard-usage.in
     SubscriptionModule,
   ],
   providers: [
-    FlashcardsService, 
+    FlashcardsService,
     DeckService,
     {
       provide: APP_INTERCEPTOR,
-      useClass: FlashcardUsageInterceptor
+      useClass: FlashcardUsageInterceptor,
     },
   ],
   controllers: [FlashcardsController, DeckController],

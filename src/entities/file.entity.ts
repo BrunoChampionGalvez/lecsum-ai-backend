@@ -1,11 +1,18 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Course } from './course.entity';
 import { Folder } from './folder.entity';
 
 export enum FileType {
   PDF = 'pdf',
   DOCX = 'docx',
-  TEXT = 'text'
+  TEXT = 'text',
 }
 
 @Entity('files')
@@ -40,13 +47,13 @@ export class File {
   @Column()
   courseId: string;
 
-  @ManyToOne(() => Course, course => course.files)
+  @ManyToOne(() => Course, (course) => course.files)
   course: Course;
-  
+
   @Column({ nullable: true })
   folderId: string;
-  
-  @ManyToOne(() => Folder, folder => folder.files, { nullable: true })
+
+  @ManyToOne(() => Folder, (folder) => folder.files, { nullable: true })
   folder: Folder;
 
   @Column({ type: 'text' })

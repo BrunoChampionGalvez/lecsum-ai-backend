@@ -32,12 +32,15 @@ declare module 'pdf.js-extract' {
 
   export interface PDFExtractResult {
     filename?: string;
-    meta?: any;
+    meta?: Record<string, unknown>;
     pages: PDFExtractPage[];
   }
 
   export class PDFExtract {
     constructor();
-    extract(filename: string, options?: PDFExtractOptions): Promise<PDFExtractResult>;
+    extract(
+      filename: string,
+      options?: PDFExtractOptions,
+    ): Promise<PDFExtractResult>;
   }
 }

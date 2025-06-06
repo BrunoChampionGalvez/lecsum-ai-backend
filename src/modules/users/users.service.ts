@@ -21,19 +21,27 @@ export class UsersService {
     return user || undefined;
   }
 
-  async create(userData: { email: string; password: string; firstName?: string; lastName?: string }): Promise<User> {
+  async create(userData: {
+    email: string;
+    password: string;
+    firstName?: string;
+    lastName?: string;
+  }): Promise<User> {
     const { password, ...rest } = userData;
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     const user = this.usersRepository.create({
       ...rest,
       password: hashedPassword,
     });
-    
+
     return this.usersRepository.save(user);
   }
 
-  async update(id: string, userData: { firstName?: string; lastName?: string }): Promise<User | undefined> {
+  async update(
+    id: string,
+    userData: { firstName?: string; lastName?: string },
+  ): Promise<User | undefined> {
     await this.usersRepository.update(id, userData);
     return this.findById(id);
   }

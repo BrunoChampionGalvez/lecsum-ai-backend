@@ -16,13 +16,19 @@ export class DeckService {
 
   async findOne(id: string): Promise<Deck> {
     // Include flashcards in the relation
-    const deck = await this.deckRepository.findOne({ where: { id }, relations: ['course', 'flashcards'] });
+    const deck = await this.deckRepository.findOne({
+      where: { id },
+      relations: ['course', 'flashcards'],
+    });
     if (!deck) throw new NotFoundException(`Deck with id ${id} not found`);
     return deck;
   }
 
   async getFlashcards(deckId: string) {
-    const deck = await this.deckRepository.findOne({ where: { id: deckId }, relations: ['flashcards'] });
+    const deck = await this.deckRepository.findOne({
+      where: { id: deckId },
+      relations: ['flashcards'],
+    });
     if (!deck) throw new NotFoundException(`Deck with id ${deckId} not found`);
     return deck.flashcards;
   }

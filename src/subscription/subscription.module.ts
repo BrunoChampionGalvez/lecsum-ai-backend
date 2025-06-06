@@ -16,21 +16,15 @@ import { User } from '../entities/user.entity';
       SubscriptionPlan,
       UserSubscription,
       SubscriptionUsage,
-      User
-    ])
+      User,
+    ]),
   ],
   controllers: [
     SubscriptionController,
     UsageTrackingController,
-    PublicSubscriptionController
+    PublicSubscriptionController,
   ],
-  providers: [
-    SubscriptionService,
-    UsageTrackingService
-  ],
-  exports: [
-    SubscriptionService,
-    UsageTrackingService
-  ]
+  providers: [SubscriptionService, UsageTrackingService],
+  exports: [SubscriptionService, UsageTrackingService],
 })
 export class SubscriptionModule {}

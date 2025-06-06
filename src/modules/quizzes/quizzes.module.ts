@@ -27,7 +27,7 @@ import { QuizUsageInterceptor } from '../../interceptors/quiz-usage.interceptor'
     QuizzesService,
     {
       provide: APP_INTERCEPTOR,
-      useClass: QuizUsageInterceptor
+      useClass: QuizUsageInterceptor,
     },
   ],
   controllers: [QuizzesController],

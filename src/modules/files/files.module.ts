@@ -16,7 +16,8 @@ import { AiModule } from '../ai/ai.module';
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, callback) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
           const ext = extname(file.originalname);
           callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
         },
@@ -25,11 +26,18 @@ import { AiModule } from '../ai/ai.module';
         fileSize: 5 * 1024 * 1024, // 5MB
       },
       fileFilter: (req, file, callback) => {
-        const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+        const allowedTypes = [
+          'application/pdf',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'text/plain',
+        ];
         if (allowedTypes.includes(file.mimetype)) {
           callback(null, true);
         } else {
-          callback(new Error('Only PDF, DOCX, and plain text files are allowed'), false);
+          callback(
+            new Error('Only PDF, DOCX, and plain text files are allowed'),
+            false,
+          );
         }
       },
     }),

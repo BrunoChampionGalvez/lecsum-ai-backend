@@ -1,4 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Course } from './course.entity';
 import { QuizQuestion } from './quiz-question.entity';
 import { DifficultyLevel } from './flashcard.entity';
@@ -36,18 +44,18 @@ export class Quiz {
   @Column()
   courseId: string;
 
-  @ManyToOne(() => Course, course => course.quizzes)
+  @ManyToOne(() => Course, (course) => course.quizzes)
   course: Course;
 
   @Column()
   userId: string;
 
-  @ManyToOne(() => User, user => user.quizzes)
+  @ManyToOne(() => User, (user) => user.quizzes)
   user: User;
 
-  @OneToMany(() => QuizQuestion, question => question.quiz)
+  @OneToMany(() => QuizQuestion, (question) => question.quiz)
   questions: QuizQuestion[];
 
-  @Column({default: false})
+  @Column({ default: false })
   aiGenerated: boolean;
 }

@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Quiz } from './quiz.entity';
 
 @Entity('quiz_questions')
@@ -22,7 +29,7 @@ export class QuizQuestion {
   isCorrect: boolean;
 
   @Column({ nullable: true, type: 'jsonb' })
-  sourceMaterial: { 
+  sourceMaterial: {
     fileId: string;
     excerpt: string;
     location: string;
@@ -37,6 +44,6 @@ export class QuizQuestion {
   @Column({ nullable: true })
   quizId: string;
 
-  @ManyToOne(() => Quiz, quiz => quiz.questions)
+  @ManyToOne(() => Quiz, (quiz) => quiz.questions)
   quiz: Quiz;
 }

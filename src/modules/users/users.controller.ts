@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Param, Patch, UseGuards, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Param,
+  Patch,
+  UseGuards,
+  NotFoundException,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { User } from '../../entities/user.entity';
@@ -14,7 +22,7 @@ export class UsersController {
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     const { password, ...result } = user;
     return result;
   }
@@ -29,7 +37,7 @@ export class UsersController {
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     const { password, ...result } = user;
     return result;
   }

@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThanOrEqual, MoreThan } from 'typeorm';
-import { SubscriptionPlan, SubscriptionPlanType } from '../entities/subscription-plan.entity';
+import { Repository } from 'typeorm';
+import {
+  SubscriptionPlan,
+  SubscriptionPlanType,
+} from '../entities/subscription-plan.entity';
 import { UserSubscription } from '../entities/user-subscription.entity';
 import { SubscriptionUsage } from '../entities/subscription-usage.entity';
 import { User } from '../entities/user.entity';
@@ -26,7 +29,7 @@ export class SubscriptionService {
     private userRepository: Repository<User>,
   ) {
     // Initialize default plans if they don't exist
-    this.initializeDefaultPlans();
+    void this.initializeDefaultPlans();
   }
 
   private async initializeDefaultPlans() {
@@ -42,7 +45,7 @@ export class SubscriptionService {
           flashcardsLimit: 50,
           quizQuestionsLimit: 50,
           trialDurationDays: 7,
-          isActive: true
+          isActive: true,
         },
         {
           type: SubscriptionPlanType.STARTER,
@@ -52,7 +55,7 @@ export class SubscriptionService {
           thinkMessageLimit: 30,
           flashcardsLimit: 300,
           quizQuestionsLimit: 300,
-          isActive: true
+          isActive: true,
         },
         {
           type: SubscriptionPlanType.PRO,
@@ -62,8 +65,8 @@ export class SubscriptionService {
           thinkMessageLimit: 60,
           flashcardsLimit: 600,
           quizQuestionsLimit: 600,
-          isActive: true
-        }
+          isActive: true,
+        },
       ]);
     }
   }
@@ -73,7 +76,7 @@ export class SubscriptionService {
    */
   async assignFreeTrialToNewUser(userId: string) {
     const freeTrial = await this.subscriptionPlanRepository.findOne({
-      where: { type: SubscriptionPlanType.FREE_TRIAL }
+      where: { type: SubscriptionPlanType.FREE_TRIAL },
     });
 
     if (!freeTrial) {
@@ -90,7 +93,7 @@ export class SubscriptionService {
       startDate,
       endDate,
       isTrialPeriod: true,
-      isActive: true
+      isActive: true,
     });
 
     // Initialize usage stats
@@ -100,7 +103,7 @@ export class SubscriptionService {
       thinkMessagesUsed: 0,
       flashcardsGenerated: 0,
       quizQuestionsGenerated: 0,
-      lastResetDate: new Date()
+      lastResetDate: new Date(),
     });
   }
 
@@ -108,19 +111,17 @@ export class SubscriptionService {
    * Fetch the active subscription for a user
    */
   async getUserActiveSubscription(userId: string) {
-    const today = new Date();
-
     const subscription = await this.userSubscriptionRepository.findOne({
       where: {
         userId,
         isActive: true,
       },
-      relations: ['plan']
+      relations: ['plan'],
     });
 
     return subscription;
   }
-  
+
   /**
    * Fetch the user's latest subscription regardless of active status
    */
@@ -131,8 +132,8 @@ export class SubscriptionService {
       },
       relations: ['plan'],
       order: {
-        createdAt: 'DESC' // Get the most recent subscription
-      }
+        createdAt: 'DESC', // Get the most recent subscription
+      },
     });
 
     return subscription;
@@ -141,9 +142,11 @@ export class SubscriptionService {
   /**
    * Check if a user has an active subscription and hasn't exceeded limits
    */
-  async checkUserSubscriptionLimits(userId: string): Promise<SubscriptionLimits> {
+  async checkUserSubscriptionLimits(
+    userId: string,
+  ): Promise<SubscriptionLimits> {
     const subscription = await this.getUserActiveSubscription(userId);
-    
+
     if (!subscription) {
       throw new Error('No active subscription found');
     }
@@ -152,7 +155,7 @@ export class SubscriptionService {
       liteMessageLimit: subscription.plan.liteMessageLimit,
       thinkMessageLimit: subscription.plan.thinkMessageLimit,
       flashcardsLimit: subscription.plan.flashcardsLimit,
-      quizQuestionsLimit: subscription.plan.quizQuestionsLimit
+      quizQuestionsLimit: subscription.plan.quizQuestionsLimit,
     };
   }
 
@@ -163,8 +166,8 @@ export class SubscriptionService {
     const subscription = await this.userSubscriptionRepository.findOne({
       where: {
         userId,
-        isTrialPeriod: true
-      }
+        isTrialPeriod: true,
+      },
     });
 
     if (!subscription) {
@@ -182,8 +185,8 @@ export class SubscriptionService {
     const subscription = await this.userSubscriptionRepository.findOne({
       where: {
         userId,
-        isTrialPeriod: true
-      }
+        isTrialPeriod: true,
+      },
     });
 
     if (!subscription || subscription.endDate < new Date()) {
@@ -193,7 +196,7 @@ export class SubscriptionService {
     const now = new Date();
     const diffTime = Math.abs(subscription.endDate.getTime() - now.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     return diffDays;
   }
 
@@ -203,11 +206,11 @@ export class SubscriptionService {
   async getUserSubscriptionDetails(userId: string) {
     // First try to get an active subscription
     let subscription = await this.getUserActiveSubscription(userId);
-    
+
     // If no active subscription exists, get the most recent subscription
     if (!subscription) {
       subscription = await this.getUserLatestSubscription(userId);
-      
+
       // If no subscription at all, return null - frontend will handle this case
       if (!subscription) {
         // No subscription found at all, return gracefully
@@ -220,19 +223,20 @@ export class SubscriptionService {
     if (!subscription) {
       throw new Error('Unexpected error: No subscription found');
     }
-    
+
     // Get usage data or create default values if none exists
-    const usage = await this.subscriptionUsageRepository.findOne({
-      where: { userId }
-    }) || { 
-      liteMessagesUsed: 0, 
-      thinkMessagesUsed: 0, 
-      flashcardsGenerated: 0, 
-      quizQuestionsGenerated: 0 
+    const usage = (await this.subscriptionUsageRepository.findOne({
+      where: { userId },
+    })) || {
+      liteMessagesUsed: 0,
+      thinkMessagesUsed: 0,
+      flashcardsGenerated: 0,
+      quizQuestionsGenerated: 0,
     };
 
-    const trialDaysLeft = subscription.isTrialPeriod ? 
-      await this.getTrialDaysLeft(userId) : 0;
+    const trialDaysLeft = subscription.isTrialPeriod
+      ? await this.getTrialDaysLeft(userId)
+      : 0;
 
     return {
       plan: {
@@ -241,25 +245,27 @@ export class SubscriptionService {
         isTrialPeriod: subscription.isTrialPeriod,
         trialDaysLeft,
         endDate: subscription.endDate,
-        isActive: subscription.isActive
+        isActive: subscription.isActive,
       },
       limits: {
         liteMessageLimit: subscription.plan.liteMessageLimit,
         thinkMessageLimit: subscription.plan.thinkMessageLimit,
         flashcardsLimit: subscription.plan.flashcardsLimit,
-        quizQuestionsLimit: subscription.plan.quizQuestionsLimit
+        quizQuestionsLimit: subscription.plan.quizQuestionsLimit,
       },
-      usage: usage ? {
-        liteMessagesUsed: usage.liteMessagesUsed,
-        thinkMessagesUsed: usage.thinkMessagesUsed,
-        flashcardsGenerated: usage.flashcardsGenerated,
-        quizQuestionsGenerated: usage.quizQuestionsGenerated
-      } : {
-        liteMessagesUsed: 0,
-        thinkMessagesUsed: 0,
-        flashcardsGenerated: 0,
-        quizQuestionsGenerated: 0
-      }
+      usage: usage
+        ? {
+            liteMessagesUsed: usage.liteMessagesUsed,
+            thinkMessagesUsed: usage.thinkMessagesUsed,
+            flashcardsGenerated: usage.flashcardsGenerated,
+            quizQuestionsGenerated: usage.quizQuestionsGenerated,
+          }
+        : {
+            liteMessagesUsed: 0,
+            thinkMessagesUsed: 0,
+            flashcardsGenerated: 0,
+            quizQuestionsGenerated: 0,
+          },
     };
   }
 
@@ -275,23 +281,25 @@ export class SubscriptionService {
 
     // Find the requested plan
     const newPlan = await this.subscriptionPlanRepository.findOne({
-      where: { type: planType }
+      where: { type: planType },
     });
-    
+
     if (!newPlan) {
       throw new Error('Subscription plan not found');
     }
 
     // Check if user is trying to downgrade from a paid plan to a free trial
     if (
-      currentSubscription.plan.type !== SubscriptionPlanType.FREE_TRIAL && 
+      currentSubscription.plan.type !== SubscriptionPlanType.FREE_TRIAL &&
       newPlan.type === SubscriptionPlanType.FREE_TRIAL
     ) {
-      throw new Error('Downgrading from a paid plan to a free trial is not allowed');
+      throw new Error(
+        'Downgrading from a paid plan to a free trial is not allowed',
+      );
     }
 
     // Calculate the new end date (30 days from now for paid plans)
-    let endDate = new Date();
+    const endDate = new Date();
     endDate.setDate(endDate.getDate() + 30);
 
     // Update the subscription
@@ -300,13 +308,13 @@ export class SubscriptionService {
     currentSubscription.endDate = endDate;
     currentSubscription.isActive = true;
     currentSubscription.isTrialPeriod = false;
-    
+
     await this.userSubscriptionRepository.save(currentSubscription);
-    
+
     // Return the updated subscription details
     return this.getUserSubscriptionDetails(userId);
   }
-  
+
   /**
    * Cancel a user's subscription
    * This doesn't immediately revoke access but sets isActive to false
@@ -322,9 +330,9 @@ export class SubscriptionService {
     // Mark the subscription as canceled (not active) but keep the end date
     // This allows the user to still access features until the subscription period ends
     currentSubscription.isActive = false;
-    
+
     await this.userSubscriptionRepository.save(currentSubscription);
-    
+
     // Return the updated subscription details
     return this.getUserSubscriptionDetails(userId);
   }
@@ -335,10 +343,10 @@ export class SubscriptionService {
   async getAllSubscriptionPlans() {
     return this.subscriptionPlanRepository.find({
       where: { isActive: true },
-      order: { 
+      order: {
         // Order: Free Trial first, then Starter, then Pro
-        type: 'ASC'
-      }
+        type: 'ASC',
+      },
     });
   }
 }

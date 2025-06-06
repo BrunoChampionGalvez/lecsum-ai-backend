@@ -1,22 +1,22 @@
-import { Injectable, Inject, BadRequestException } from '@nestjs/common';
-import { GenerateContentParameters, GoogleGenAI } from "@google/genai";
-import { FlashcardType, DifficultyLevel } from '../../entities/flashcard.entity';
-import { ChatMessage, FileCitation, FlashcardDeckCitation, QuizCitation, MessageRole } from '../../entities/chat-message.entity';
+import { Injectable, Inject } from '@nestjs/common';
+import { GoogleGenAI, Schema, Type } from '@google/genai';
+import {
+  FlashcardType,
+  DifficultyLevel,
+} from '../../entities/flashcard.entity';
+import { ChatMessage, MessageRole } from '../../entities/chat-message.entity';
 import { ConfigService } from '@nestjs/config';
-import { response, text } from 'express';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Pinecone, SearchRecordsResponseResult } from '@pinecone-database/pinecone';
+import {
+  Pinecone,
+  SearchRecordsResponseResult,
+} from '@pinecone-database/pinecone';
 // Define citation interface for the AI responses
 export interface CitationInfo {
   fileId: string;
   excerpt: string;
   location: string;
-}
-
-enum UserQueryType {
-  GENERIC = 'GENERIC',
-  SPECIFIC = 'SPECIFIC'
 }
 
 @Injectable()
@@ -27,27 +27,45 @@ export class AiService {
     flashLite: string;
   };
   private pc: Pinecone;
-  
-  constructor(@Inject('CONFIG_SERVICE') private configService: ConfigService, @InjectRepository(ChatMessage) private chatMessagesRepository: Repository<ChatMessage>) {
-    this.gemini = new GoogleGenAI({ apiKey: this.configService.get('GEMINI_API_KEY')});
+
+  constructor(
+    @Inject('CONFIG_SERVICE') private configService: ConfigService,
+    @InjectRepository(ChatMessage)
+    private chatMessagesRepository: Repository<ChatMessage>,
+  ) {
+    this.gemini = new GoogleGenAI({
+      apiKey: this.configService.get('GEMINI_API_KEY'),
+    });
     this.geminiModels = {
-      flashPreview: "gemini-2.5-flash-preview-05-20",
-      flashLite: "gemini-2.0-flash-lite"
+      flashPreview: 'gemini-2.5-flash-preview-05-20',
+      flashLite: 'gemini-2.0-flash-lite',
     };
-    this.pc = new Pinecone({ apiKey: this.configService.get('PINECONE_API_KEY') as string });
+    this.pc = new Pinecone({
+      apiKey: this.configService.get('PINECONE_API_KEY') as string,
+    });
   }
 
   async generateFlashcards(
-    fileContents: Array<{ id: string; name: string; content: string; type: string }>,
+    fileContents: Array<{
+      id: string;
+      name: string;
+      content: string;
+      type: string;
+    }>,
     types: FlashcardType[],
     flashcardCount: number,
-    difficulty: DifficultyLevel
+    difficulty: DifficultyLevel,
   ) {
     try {
       // Prepare context from file contents
-      const context = 'Files:\n' + fileContents
-        .map((file, index) => `File ${index + 1}:\nFile name: ${file.name}\nFile content: ${file.content}\nFile id: ${file.id}`)
-        .join('\n\n');
+      const context =
+        'Files:\n' +
+        fileContents
+          .map(
+            (file, index) =>
+              `File ${index + 1}:\nFile name: ${file.name}\nFile content: ${file.content}\nFile id: ${file.id}`,
+          )
+          .join('\n\n');
 
       // Prepare the prompt for generating flashcards
       const typesStr = types.join(', ');
@@ -65,7 +83,7 @@ export class AiService {
         model: this.geminiModels.flashPreview,
         contents: prompt,
         config: {
-          systemInstruction: `Generate a set of educational flashcards based on the content of files provided. If you find that the content is not enough to generate the number of flashcards requested, you should generate a smaller and reasonable number of flashcards that you can generate based on the amount of information you receive. Don\'t use any information from your general knowledge to generate flashcards. ONLY return the JSON array of flashcards. The things been evaluated in the flashcards must be as close as possible to the things university professors usually evaluate in their students, their purpose is to help students practice for university exams. Don't evaluate superficial or unimportant things (like irrelevant exact amounts or numbers, that are usually not important in the context of the student university formation), evaluate things that demand important knowledge and undestanding of the study material. For each flashcard, provide:
+          systemInstruction: `Generate a set of educational flashcards based on the content of files provided. If you find that the content is not enough to generate the number of flashcards requested, you should generate a smaller and reasonable number of flashcards that you can generate based on the amount of information you receive. Don't use any information from your general knowledge to generate flashcards. ONLY return the JSON array of flashcards. The things been evaluated in the flashcards must be as close as possible to the things university professors usually evaluate in their students, their purpose is to help students practice for university exams. Don't evaluate superficial or unimportant things (like irrelevant exact amounts or numbers, that are usually not important in the context of the student university formation), evaluate things that demand important knowledge and undestanding of the study material. For each flashcard, provide:
           \n
           1. Type (${typesStr})
           2. Front content
@@ -85,6 +103,8 @@ export class AiService {
           ]
           \n
           The flashcard type of 'qa' means that the flashcard is a question and answer flashcard. The flashcard type of 'cloze' means that the flashcard is a cloze flashcard (fill-in-the-blank). For the blanks of this last type of flashcard, use 4 low dashes: ____.
+          \n
+          IMPORTANT: If the information you are using to generate the flashcards is in another language, other than english for example, use that same language to generate the flashcards.
         `,
           temperature: 0.1,
           thinkingConfig: {
@@ -92,51 +112,76 @@ export class AiService {
           },
           maxOutputTokens: 8000,
           responseSchema: {
-            type: 'ARRAY',
-            maxItems: 30,
-            minItems: 5,
+            type: Type.ARRAY,
+            maxItems: '30',
+            minItems: '5',
             items: {
-              type: 'OBJECT',
+              type: Type.OBJECT,
               properties: {
                 type: {
-                  type: 'STRING',
-                  enum: ['qa', 'cloze']
+                  type: Type.STRING,
+                  enum: ['qa', 'cloze'],
                 },
                 front: {
-                  type: 'STRING'
+                  type: Type.STRING,
                 },
                 back: {
-                  type: 'STRING'
+                  type: Type.STRING,
                 },
                 difficulty: {
-                  type: 'STRING',
-                  enum: ['easy', 'moderate', 'hard']
-                }
-              }
-            }
-          }
-        }
-      })
+                  type: Type.STRING,
+                  enum: ['easy', 'moderate', 'hard'],
+                },
+              },
+            },
+          } as Schema,
+        },
+      });
 
-      const result = response.text
+      const result = response.text;
 
-      return result
-    } catch (error) {
-      console.error('Error generating flashcards:', error);
+      return result;
+    } catch (error: unknown) {
+      const prefix = 'Error generating flashcards';
+      if (error instanceof Error) {
+        console.error(`${prefix}: ${error.message}`);
+      } else if (typeof error === 'string') {
+        console.error(`${prefix}: ${error}`);
+      } else if (
+        error &&
+        typeof (error as { message?: unknown }).message === 'string'
+      ) {
+        console.error(`${prefix}: ${(error as { message: string }).message}`);
+      } else {
+        console.error(
+          `${prefix}: An unexpected error object was caught. Original error:`,
+          error,
+        );
+      }
       return [];
     }
   }
 
   async generateQuizQuestions(
-    fileContents: Array<{ id: string; name: string; content: string; type: string }>,
+    fileContents: Array<{
+      id: string;
+      name: string;
+      content: string;
+      type: string;
+    }>,
     questionCount: number,
-    difficulty: DifficultyLevel
+    difficulty: DifficultyLevel,
   ) {
     try {
       // Prepare context from file contents
-      const context = 'Files:\n' + fileContents
-        .map((file, index) => `File ${index + 1}:\nFile name: ${file.name}\nFile content: ${file.content}\nFile id: ${file.id}`)
-        .join('\n\n');
+      const context =
+        'Files:\n' +
+        fileContents
+          .map(
+            (file, index) =>
+              `File ${index + 1}:\nFile name: ${file.name}\nFile content: ${file.content}\nFile id: ${file.id}`,
+          )
+          .join('\n\n');
 
       const prompt = `
         Questions difficulty level: ${difficulty}
@@ -150,7 +195,7 @@ export class AiService {
         model: this.geminiModels.flashPreview,
         contents: prompt,
         config: {
-          systemInstruction: `Generate a set of educational quiz questions based on the content of files provided. If you find that the content is not enough to generate the number of questions requested, you should generate a smaller and reasonable number of questions that you can generate based on the amount of information you receive. Don\'t use any information from your general knowledge to generate questions. ONLY return the JSON array of questions. The things been evaluated in the questions must be as close as possible to the things university professors usually evaluate in their students, their purpose is to help students practice for university exams. Don't evaluate superficial or unimportant things (like irrelevant exact amounts or numbers, that are usually not important in the context of the student university formation), evaluate things that demand important knowledge and undestanding of the study material. For each question, provide:
+          systemInstruction: `Generate a set of educational quiz questions based on the content of files provided. If you find that the content is not enough to generate the number of questions requested, you should generate a smaller and reasonable number of questions that you can generate based on the amount of information you receive. Don't use any information from your general knowledge to generate questions. ONLY return the JSON array of questions. The things been evaluated in the questions must be as close as possible to the things university professors usually evaluate in their students, their purpose is to help students practice for university exams. Don't evaluate superficial or unimportant things (like irrelevant exact amounts or numbers, that are usually not important in the context of the student university formation), evaluate things that demand important knowledge and undestanding of the study material. For each question, provide:
           \n
           1. The question text
           2. 4 answer options
@@ -169,42 +214,60 @@ export class AiService {
               "correctAnswer": "Option B"
             },
             // more questions...
-          ]`,
+          ]
+          \n
+          IMPORTANT: If the information you are using to generate the questions is in another language, other than english for example, use that same language to generate the questions.
+          `,
           temperature: 0.1,
           thinkingConfig: {
             thinkingBudget: 0,
           },
           maxOutputTokens: 8000,
           responseSchema: {
-            type: 'ARRAY',
-            maxItems: 30,
-            minItems: 5,
+            type: Type.ARRAY,
+            maxItems: '30',
+            minItems: '5',
             items: {
-              type: 'OBJECT',
+              type: Type.OBJECT,
               properties: {
                 question: {
-                  type: 'STRING'
+                  type: Type.STRING,
                 },
                 options: {
-                  type: 'ARRAY',
+                  type: Type.ARRAY,
                   items: {
-                    type: 'STRING'
-                  }
+                    type: Type.STRING,
+                  },
                 },
                 correctAnswer: {
-                  type: 'STRING'
-                }
-              }
-            }
-          }
-        }
-      })
+                  type: Type.STRING,
+                },
+              },
+            },
+          } as Schema,
+        },
+      });
 
-      const result = response.text
+      const result = response.text;
 
-      return result
-    } catch (error) {
-      console.error('Error generating quiz questions:', error);
+      return result;
+    } catch (error: unknown) {
+      const prefix = 'Error generating quiz questions';
+      if (error instanceof Error) {
+        console.error(`${prefix}: ${error.message}`);
+      } else if (typeof error === 'string') {
+        console.error(`${prefix}: ${error}`);
+      } else if (
+        error &&
+        typeof (error as { message?: unknown }).message === 'string'
+      ) {
+        console.error(`${prefix}: ${(error as { message: string }).message}`);
+      } else {
+        console.error(
+          `${prefix}: An unexpected error object was caught. Original error:`,
+          error,
+        );
+      }
       return [];
     }
   }
@@ -216,17 +279,29 @@ export class AiService {
   ): AsyncGenerator<string, void, unknown> {
     try {
       console.log('🔄 AI Service: Starting generateChatResponse');
-      
+
       const systemPrompt = this.buildSystemPrompt();
 
       const formattedMessages = [
         ...messages.map((msg) => ({
-          role: msg.role === MessageRole.USER ? ('user' as const) : ('model' as const),
-          parts: [{ text: 'Context: ' + context + '\n\n' + 'User query: ' + msg.content }],
-        }))
+          role:
+            msg.role === MessageRole.USER
+              ? ('user' as const)
+              : ('model' as const),
+          parts: [
+            {
+              text:
+                'Context: ' + context + '\n\n' + 'User query: ' + msg.content,
+            },
+          ],
+        })),
       ];
 
-      console.log('🚀 AI Service: Calling Gemini API with', formattedMessages.length, 'messages');
+      console.log(
+        '🚀 AI Service: Calling Gemini API with',
+        formattedMessages.length,
+        'messages',
+      );
 
       const response = await this.gemini.models.generateContentStream({
         model: this.geminiModels.flashPreview,
@@ -237,7 +312,7 @@ export class AiService {
           maxOutputTokens: 8192,
           thinkingConfig: {
             thinkingBudget: thinkMode ? 5000 : 0,
-          }
+          },
         },
       });
 
@@ -248,45 +323,82 @@ export class AiService {
       for await (const chunk of response) {
         chunkCount++;
         console.log(`📦 AI Service: Processing chunk ${chunkCount}`);
-        
+
         if (chunk.candidates && chunk.candidates[0]) {
           const candidate = chunk.candidates[0];
           console.log('✅ AI Service: Chunk has candidates');
-          
+
           if (candidate.content && candidate.content.parts) {
-            console.log(`📝 AI Service: Chunk has ${candidate.content.parts.length} parts`);
-            
+            console.log(
+              `📝 AI Service: Chunk has ${candidate.content.parts.length} parts`,
+            );
+
             for (let i = 0; i < candidate.content.parts.length; i++) {
               const part = candidate.content.parts[i];
-              
+
               if (part.text) {
                 const chunkText = part.text;
-                console.log(`🔤 AI Service: Part ${i} text length: ${chunkText.length}`);
+                console.log(
+                  `🔤 AI Service: Part ${i} text length: ${chunkText.length}`,
+                );
                 console.log(`🔤 AI Service: Part ${i} text: "${chunkText}"`);
-                
+
                 totalYielded += chunkText;
-                console.log(`📊 AI Service: Total yielded so far: ${totalYielded.length} chars`);
-                
+                console.log(
+                  `📊 AI Service: Total yielded so far: ${totalYielded.length} chars`,
+                );
+
                 yield chunkText;
-                console.log(`✅ AI Service: Yielded chunk part ${i} of chunk ${chunkCount}`);
+                console.log(
+                  `✅ AI Service: Yielded chunk part ${i} of chunk ${chunkCount}`,
+                );
               } else {
                 console.log(`⚠️ AI Service: Part ${i} has no text`);
               }
             }
           } else {
-            console.log('⚠️ AI Service: Chunk candidate has no content or parts');
+            console.log(
+              '⚠️ AI Service: Chunk candidate has no content or parts',
+            );
           }
         } else {
           console.log('⚠️ AI Service: Chunk has no candidates');
         }
       }
 
-      console.log(`🏁 AI Service: Finished streaming. Total chunks: ${chunkCount}, Total text: ${totalYielded.length} chars`);
-      console.log(`📄 AI Service: Final complete text preview: "${totalYielded.substring(0, 200)}..."`);
-      
-    } catch (error) {
-      console.error('❌ AI Service: Error in generateChatResponse:', error);
-      yield `Sorry, I encountered an error: ${error.message}`;
+      console.log(
+        `🏁 AI Service: Finished streaming. Total chunks: ${chunkCount}, Total text: ${totalYielded.length} chars`,
+      );
+      console.log(
+        `📄 AI Service: Final complete text preview: "${totalYielded.substring(0, 200)}..."`,
+      );
+    } catch (error: unknown) {
+      const consolePrefix = '❌ AI Service: Error in generateChatResponse';
+      const yieldPrefix = 'Sorry, I encountered an error';
+      let yieldMessage = `${yieldPrefix}: An unexpected error occurred.`;
+
+      if (error instanceof Error) {
+        const specificMessage = error.message;
+        console.error(`${consolePrefix}: ${specificMessage}`);
+        yieldMessage = `${yieldPrefix}: ${specificMessage}`;
+      } else if (typeof error === 'string') {
+        console.error(`${consolePrefix}: ${error}`);
+        yieldMessage = `${yieldPrefix}: ${error}`;
+      } else if (
+        error &&
+        typeof (error as { message?: unknown }).message === 'string'
+      ) {
+        const specificMessage = (error as { message: string }).message;
+        console.error(`${consolePrefix}: ${specificMessage}`);
+        yieldMessage = `${yieldPrefix}: ${specificMessage}`;
+      } else {
+        console.error(
+          `${consolePrefix}: An unexpected error object was caught. Original error:`,
+          error,
+        );
+        // yieldMessage remains the generic one
+      }
+      yield yieldMessage;
     }
   }
 
@@ -297,17 +409,18 @@ export class AiService {
         Generate a summary of the following text:
         "${fileContent}"
       `;
-      
+
       const result = await this.gemini.models.generateContent({
         model: this.geminiModels.flashLite,
         contents: prompt,
         config: {
-          systemInstruction: 'You are a summary generator. You will receive the extracted text from a file.Generate a concise summary of that text. Return ONLY the summary text, nothing else. The summary should be between around 3 and 4 sentences long.',
+          systemInstruction:
+            'You are a summary generator. You will receive the extracted text from a file.Generate a concise summary of that text. Return ONLY the summary text, nothing else. The summary should be between around 3 and 4 sentences long.',
           temperature: 0.2,
-        }
+        },
       });
       const summary = result.text;
-      
+
       // Limit the length and remove any quotes
       return summary ? summary : `The file has no summary`;
     } catch (error) {
@@ -325,19 +438,22 @@ export class AiService {
         
         Return ONLY the title text, nothing else.
       `;
-      
+
       const result = await this.gemini.models.generateContent({
         model: this.geminiModels.flashLite,
         contents: prompt,
         config: {
-          systemInstruction: 'You are a session name generator. Generate a short, concise title (maximum 30 characters) for a chat conversation that starts with the message you receive. Return ONLY the title text, nothing else.',
+          systemInstruction:
+            'You are a session name generator. Generate a short, concise title (maximum 30 characters) for a chat conversation that starts with the message you receive. Return ONLY the title text, nothing else.',
           temperature: 0.2,
-        }
+        },
       });
       const name = result.text;
-      
+
       // Limit the length and remove any quotes
-      return name?.substring(0, 30) ? name?.substring(0, 30) : `Chat ${new Date().toLocaleDateString()}`;
+      return name?.substring(0, 30)
+        ? name?.substring(0, 30)
+        : `Chat ${new Date().toLocaleDateString()}`;
     } catch (error) {
       console.error('Error generating session name:', error);
       return `Chat ${new Date().toLocaleDateString()}`;
@@ -390,20 +506,36 @@ export class AiService {
         "questionId": "ad7587af-55da-453d-99b4-ffb5923da243"
       }
       [/REF]
+
+      IMPORTANT: If the user talks to you in another language, respond in the same language. But you must always make the references in the same language as the original source (file, flashcard deck, quiz, etc.)
     `;
 
     return prompt;
   }
 
-  async semanticSearch(query: string, userId: string, fileId?: string): Promise<SearchRecordsResponseResult['hits']> {
-    const index = this.pc.index(this.configService.get('PINECONE_INDEX_NAME') as string, this.configService.get('PINECONE_INDEX_HOST') as string)
+  async semanticSearch(
+    query: string,
+    userId: string,
+  ): Promise<SearchRecordsResponseResult['hits']> {
+    const index = this.pc.index(
+      this.configService.get('PINECONE_INDEX_NAME') as string,
+      this.configService.get('PINECONE_INDEX_HOST') as string,
+    );
     const namespace = index.namespace(userId);
     const describedNamespace = await namespace.describeNamespace(userId);
     const recordCount = describedNamespace.recordCount;
     const recordCountNumber = Number(recordCount);
     const isRecordCountNumber = !isNaN(recordCountNumber);
-    const topK = isRecordCountNumber ? (recordCountNumber < 10 ? recordCountNumber : 10) : 10;
-    const topN = isRecordCountNumber ? (topK < 5 ? Math.floor(topK - (topK * 0.2)) : 5) : 5;
+    const topK = isRecordCountNumber
+      ? recordCountNumber < 10
+        ? recordCountNumber
+        : 10
+      : 10;
+    const topN = isRecordCountNumber
+      ? topK < 5
+        ? Math.floor(topK - topK * 0.2)
+        : 5
+      : 5;
     const lessThan250Words = this.countWords(query) < 250;
 
     const response = await namespace.searchRecords({
@@ -412,11 +544,15 @@ export class AiService {
         inputs: { text: query },
       },
       fields: ['chunk_text', 'fileId', 'name'],
-      ...(lessThan250Words ? {rerank: {
-        model: 'bge-reranker-v2-m3',
-        rankFields: ['chunk_text'],
-        topN: topN,
-      }} : {}),
+      ...(lessThan250Words
+        ? {
+            rerank: {
+              model: 'bge-reranker-v2-m3',
+              rankFields: ['chunk_text'],
+              topN: topN,
+            },
+          }
+        : {}),
     });
 
     return response.result.hits;
@@ -431,17 +567,18 @@ export class AiService {
         
         Return ONLY the title text, nothing else.
       `;
-      
+
       const result = await this.gemini.models.generateContent({
         model: this.geminiModels.flashLite,
         contents: prompt,
         config: {
-          systemInstruction: 'You are a file title extractor. Extract the title from the following text that you receive, that was originally extracted from a file. Return ONLY the title text, nothing else.',
+          systemInstruction:
+            'You are a file title extractor. Extract the title from the following text that you receive, that was originally extracted from a file. Return ONLY the title text, nothing else.',
           temperature: 0.2,
-        }
+        },
       });
       const name = result.text;
-      
+
       // Limit the length and remove any quotes
       return name ? name : fileName;
     } catch (error) {
@@ -459,7 +596,7 @@ export class AiService {
         
         Return ONLY the category text, nothing else.
       `;
-      
+
       const result = await this.gemini.models.generateContent({
         model: this.geminiModels.flashLite,
         contents: prompt,
@@ -480,9 +617,9 @@ export class AiService {
           "Write a summary of this file."
           "Write a summary of this flashcard deck."
           "Write a summary of this quiz."
-          "Write a summary of the file named \"Sleep disorders and cancer incidence: examining duration and severity of diagnosis among veterans\""
-          "Write a summary of the flashcard deck named \"Psychology I\""
-          "Write a summary of the quiz named \"Politics II\""
+          "Write a summary of the file named "Sleep disorders and cancer incidence: examining duration and severity of diagnosis among veterans""
+          "Write a summary of the flashcard deck named "Psychology I""
+          "Write a summary of the quiz named "Politics II""
           "What are the names of the files in this course that talk about photosynthesis?"
 
           2. SPECIFIC: The user is asking a question that can be recognized as belonging to a specific topic.
@@ -497,18 +634,18 @@ export class AiService {
           "How does Carl Jung's psychoanalysis differ from Sigmund Freud's?"
           "What differentiates the super ego from the ego and the id?"
           "Give me a summary of the theory of relativity of Albert Einstein."
-          "How are stars formed?"`,  
+          "How are stars formed?"`,
           temperature: 0.2,
           responseMimeType: 'text/x.enum',
           responseSchema: {
             type: 'STRING',
             format: 'enum',
             enum: ['GENERIC', 'SPECIFIC'],
-          }
-        }
+          },
+        },
       });
       const category = result.text;
-      
+
       // Limit the length and remove any quotes
       return category ? category : 'GENERIC';
     } catch (error) {
@@ -518,6 +655,6 @@ export class AiService {
   }
 
   countWords(text: string): number {
-    return text.split(/\s+/).filter(word => word.length > 0).length;
+    return text.split(/\s+/).filter((word) => word.length > 0).length;
   }
 }

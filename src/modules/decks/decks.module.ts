@@ -7,10 +7,7 @@ import { Flashcard } from '../../entities/flashcard.entity';
 import { CoursesModule } from '../courses/courses.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Deck, Flashcard]),
-    CoursesModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Deck, Flashcard]), CoursesModule],
   controllers: [DecksController],
   providers: [DecksService],
   exports: [DecksService],

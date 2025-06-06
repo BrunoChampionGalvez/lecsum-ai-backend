@@ -1,16 +1,23 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Course } from './course.entity';
 import { Deck } from './deck.entity';
 
 export enum FlashcardType {
   CLOZE = 'cloze',
-  QA = 'qa'
+  QA = 'qa',
 }
 
 export enum DifficultyLevel {
   EASY = 'easy',
   MODERATE = 'moderate',
-  HARD = 'hard'
+  HARD = 'hard',
 }
 
 @Entity('flashcards')
@@ -31,7 +38,7 @@ export class Flashcard {
   difficulty: DifficultyLevel;
 
   @Column({ nullable: true, type: 'jsonb' })
-  sourceMaterial: { 
+  sourceMaterial: {
     fileId: string;
     excerpt: string;
     location: string;
@@ -49,9 +56,12 @@ export class Flashcard {
   @Column({ nullable: true })
   deckId: string;
 
-  @ManyToOne(() => Deck, deck => deck.flashcards, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => Deck, (deck) => deck.flashcards, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   deck: Deck;
 
-  @ManyToOne(() => Course, course => course.flashcards)
+  @ManyToOne(() => Course, (course) => course.flashcards)
   course: Course;
 }

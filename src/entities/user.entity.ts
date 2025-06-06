@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Course } from './course.entity';
 import { ChatSession } from './chat-session.entity';
 import { Quiz } from './quiz.entity';
@@ -29,21 +36,21 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => Course, course => course.user)
+  @OneToMany(() => Course, (course) => course.user)
   courses: Course[];
 
-  @OneToMany(() => Quiz, quiz => quiz.user)
+  @OneToMany(() => Quiz, (quiz) => quiz.user)
   quizzes: Quiz[];
 
-  @OneToMany(() => Deck, deck => deck.user)
+  @OneToMany(() => Deck, (deck) => deck.user)
   decks: Deck[];
 
-  @OneToMany(() => ChatSession, chatSession => chatSession.user)
+  @OneToMany(() => ChatSession, (chatSession) => chatSession.user)
   chatSessions: ChatSession[];
-  
-  @OneToMany(() => UserSubscription, subscription => subscription.user)
+
+  @OneToMany(() => UserSubscription, (subscription) => subscription.user)
   subscriptions: UserSubscription[];
-  
-  @OneToMany(() => SubscriptionUsage, usage => usage.user)
+
+  @OneToMany(() => SubscriptionUsage, (usage) => usage.user)
   usageStats: SubscriptionUsage[];
 }

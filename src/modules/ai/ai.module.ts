@@ -6,10 +6,7 @@ import { geminiConfig } from '../../config/gemini.config';
 import { ChatMessage } from '../../entities/chat-message.entity';
 
 @Module({
-  imports: [
-    ConfigModule,
-    TypeOrmModule.forFeature([ChatMessage]),
-  ],
+  imports: [ConfigModule, TypeOrmModule.forFeature([ChatMessage])],
   providers: [
     {
       provide: 'GEMINI_CONFIG',

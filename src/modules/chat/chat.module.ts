@@ -31,7 +31,7 @@ import { ChatMessageUsageInterceptor } from '../../interceptors/chat-message-usa
     ChatService,
     {
       provide: APP_INTERCEPTOR,
-      useClass: ChatMessageUsageInterceptor
+      useClass: ChatMessageUsageInterceptor,
     },
   ],
   controllers: [ChatController],

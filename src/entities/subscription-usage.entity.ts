@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+} from 'typeorm';
 import { User } from './user.entity';
 
 @Entity('subscription_usage')
@@ -9,7 +16,7 @@ export class SubscriptionUsage {
   @Column()
   userId: string;
 
-  @ManyToOne(() => User, user => user.usageStats)
+  @ManyToOne(() => User, (user) => user.usageStats)
   user: User;
 
   @Column({ default: 0 })

@@ -3,6 +3,6 @@ export const geminiConfig = {
   models: {
     flash: 'gemini-2.0-flash',
     flashPreview: 'gemini-2.5-flash-preview',
-    flashLite: 'gemini-2.0-flash-lite'
-  }
+    flashLite: 'gemini-2.0-flash-lite',
+  },
 };

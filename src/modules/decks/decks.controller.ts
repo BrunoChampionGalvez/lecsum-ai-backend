@@ -1,7 +1,21 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  Delete,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { DecksService } from './decks.service';
 import { Deck } from '../../entities/deck.entity';
+
+interface UserPayload {
+  id: string;
+}
 
 @Controller('decks')
 @UseGuards(JwtAuthGuard)
@@ -9,12 +23,12 @@ export class DecksController {
   constructor(private readonly decksService: DecksService) {}
 
   @Get()
-  async findAll(@Request() req): Promise<any[]> {
+  async findAll(@Request() req: { user: UserPayload }): Promise<unknown[]> {
     return this.decksService.findAllByUser(req.user.id);
   }
-  
+
   @Get('with-flashcards')
-  async getAllWithFlashcards(): Promise<any[]> {
+  async getAllWithFlashcards(): Promise<unknown[]> {
     return this.decksService.getAllDecksWithFlashcards();
   }
 
@@ -24,12 +38,15 @@ export class DecksController {
   }
 
   @Get(':id/flashcards')
-  async getDeckWithFlashcards(@Param('id') id: string): Promise<any> {
+  async getDeckWithFlashcards(@Param('id') id: string): Promise<unknown> {
     return this.decksService.getDeckWithFlashcards(id);
   }
 
   @Post()
-  async create(@Body() createDeckDto: Partial<Deck>, @Request() req): Promise<Deck> {
+  async create(
+    @Body() createDeckDto: Partial<Deck>,
+    @Request() req: { user: UserPayload },
+  ): Promise<Deck> {
     return this.decksService.create(req.user.id, createDeckDto);
   }
 

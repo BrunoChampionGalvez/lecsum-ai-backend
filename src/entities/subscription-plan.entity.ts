@@ -4,7 +4,7 @@ import { UserSubscription } from './user-subscription.entity';
 export enum SubscriptionPlanType {
   FREE_TRIAL = 'free_trial',
   STARTER = 'starter',
-  PRO = 'pro'
+  PRO = 'pro',
 }
 
 @Entity('subscription_plans')
@@ -15,7 +15,7 @@ export class SubscriptionPlan {
   @Column({
     type: 'enum',
     enum: SubscriptionPlanType,
-    unique: true
+    unique: true,
   })
   type: SubscriptionPlanType;
 
@@ -42,7 +42,7 @@ export class SubscriptionPlan {
 
   @Column({ default: true })
   isActive: boolean;
-  
-  @OneToMany(() => UserSubscription, subscription => subscription.plan)
+
+  @OneToMany(() => UserSubscription, (subscription) => subscription.plan)
   subscriptions: UserSubscription[];
 }

@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  ManyToOne,
+} from 'typeorm';
 import { Flashcard } from './flashcard.entity';
 import { Course } from './course.entity';
 import { User } from './user.entity';
@@ -14,13 +20,13 @@ export class Deck {
   @Column({ nullable: true })
   description: string;
 
-  @OneToMany(() => Flashcard, flashcard => flashcard.deck)
+  @OneToMany(() => Flashcard, (flashcard) => flashcard.deck)
   flashcards: Flashcard[];
 
   @Column()
   courseId: string;
 
-  @ManyToOne(() => Course, course => course.decks)
+  @ManyToOne(() => Course, (course) => course.decks)
   course: Course;
 
   @Column({ default: false })
@@ -29,7 +35,7 @@ export class Deck {
   @Column()
   userId: string;
 
-  @ManyToOne(() => User, user => user.decks)
+  @ManyToOne(() => User, (user) => user.decks)
   user: User;
 
   @Column({ type: 'varchar', array: true, default: [] })

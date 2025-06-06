@@ -9,7 +9,7 @@ export class UsageTrackingService {
   constructor(
     @InjectRepository(SubscriptionUsage)
     private subscriptionUsageRepository: Repository<SubscriptionUsage>,
-    private subscriptionService: SubscriptionService
+    private subscriptionService: SubscriptionService,
   ) {}
 
   /**
@@ -45,16 +45,17 @@ export class UsageTrackingService {
    */
   async canUseFeature(
     userId: string,
-    feature: 'liteMessage' | 'thinkMessage' | 'flashcard' | 'quizQuestion'
+    feature: 'liteMessage' | 'thinkMessage' | 'flashcard' | 'quizQuestion',
   ): Promise<boolean> {
     try {
-      const subscriptionDetails = await this.subscriptionService.getUserSubscriptionDetails(userId);
-      
+      const subscriptionDetails =
+        await this.subscriptionService.getUserSubscriptionDetails(userId);
+
       // If no subscription is found, user cannot use features
       if (!subscriptionDetails) {
         return false;
       }
-      
+
       const { limits, usage } = subscriptionDetails;
 
       switch (feature) {
@@ -80,27 +81,37 @@ export class UsageTrackingService {
    */
   async getRemainingUsage(
     userId: string,
-    feature: 'liteMessage' | 'thinkMessage' | 'flashcard' | 'quizQuestion'
+    feature: 'liteMessage' | 'thinkMessage' | 'flashcard' | 'quizQuestion',
   ): Promise<number> {
     try {
-      const subscriptionDetails = await this.subscriptionService.getUserSubscriptionDetails(userId);
-      
+      const subscriptionDetails =
+        await this.subscriptionService.getUserSubscriptionDetails(userId);
+
       // If no subscription is found, user has 0 remaining uses
       if (!subscriptionDetails) {
         return 0;
       }
-      
+
       const { limits, usage } = subscriptionDetails;
 
       switch (feature) {
         case 'liteMessage':
           return Math.max(0, limits.liteMessageLimit - usage.liteMessagesUsed);
         case 'thinkMessage':
-          return Math.max(0, limits.thinkMessageLimit - usage.thinkMessagesUsed);
+          return Math.max(
+            0,
+            limits.thinkMessageLimit - usage.thinkMessagesUsed,
+          );
         case 'flashcard':
-          return Math.max(0, limits.flashcardsLimit - usage.flashcardsGenerated);
+          return Math.max(
+            0,
+            limits.flashcardsLimit - usage.flashcardsGenerated,
+          );
         case 'quizQuestion':
-          return Math.max(0, limits.quizQuestionsLimit - usage.quizQuestionsGenerated);
+          return Math.max(
+            0,
+            limits.quizQuestionsLimit - usage.quizQuestionsGenerated,
+          );
         default:
           return 0;
       }
@@ -121,8 +132,8 @@ export class UsageTrackingService {
         thinkMessagesUsed: 0,
         flashcardsGenerated: 0,
         quizQuestionsGenerated: 0,
-        lastResetDate: new Date()
-      }
+        lastResetDate: new Date(),
+      },
     );
   }
 
@@ -131,12 +142,16 @@ export class UsageTrackingService {
    */
   private async incrementUsage(
     userId: string,
-    usageType: 'liteMessagesUsed' | 'thinkMessagesUsed' | 'flashcardsGenerated' | 'quizQuestionsGenerated',
-    incrementBy = 1
+    usageType:
+      | 'liteMessagesUsed'
+      | 'thinkMessagesUsed'
+      | 'flashcardsGenerated'
+      | 'quizQuestionsGenerated',
+    incrementBy = 1,
   ): Promise<boolean> {
     // Get current usage
     let usage = await this.subscriptionUsageRepository.findOne({
-      where: { userId }
+      where: { userId },
     });
 
     // If no usage record exists, create one
@@ -147,13 +162,17 @@ export class UsageTrackingService {
         thinkMessagesUsed: 0,
         flashcardsGenerated: 0,
         quizQuestionsGenerated: 0,
-        lastResetDate: new Date()
+        lastResetDate: new Date(),
       });
     }
 
     // Map feature to the corresponding limit check
-    let featureType: 'liteMessage' | 'thinkMessage' | 'flashcard' | 'quizQuestion';
-    
+    let featureType:
+      | 'liteMessage'
+      | 'thinkMessage'
+      | 'flashcard'
+      | 'quizQuestion';
+
     switch (usageType) {
       case 'liteMessagesUsed':
         featureType = 'liteMessage';
@@ -178,7 +197,7 @@ export class UsageTrackingService {
     // Update the counter
     usage[usageType] += incrementBy;
     await this.subscriptionUsageRepository.save(usage);
-    
+
     return true;
   }
 }

@@ -1,4 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 import { Deck } from './deck.entity';
 import { File } from './file.entity';
@@ -32,21 +40,21 @@ export class Course {
   @Column()
   userId: string;
 
-  @ManyToOne(() => User, user => user.courses)
+  @ManyToOne(() => User, (user) => user.courses)
   user: User;
 
-  @OneToMany(() => File, file => file.course)
+  @OneToMany(() => File, (file) => file.course)
   files: File[];
-  
-  @OneToMany(() => Folder, folder => folder.course)
+
+  @OneToMany(() => Folder, (folder) => folder.course)
   folders: Folder[];
 
-  @OneToMany(() => Quiz, quiz => quiz.course)
+  @OneToMany(() => Quiz, (quiz) => quiz.course)
   quizzes: Quiz[];
 
-  @OneToMany(() => Flashcard, flashcard => flashcard.course)
+  @OneToMany(() => Flashcard, (flashcard) => flashcard.course)
   flashcards: Flashcard[];
 
-  @OneToMany(() => Deck, deck => deck.course)
+  @OneToMany(() => Deck, (deck) => deck.course)
   decks: Deck[];
 }

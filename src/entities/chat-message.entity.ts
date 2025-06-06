@@ -1,9 +1,15 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  CreateDateColumn,
+} from 'typeorm';
 import { ChatSession } from './chat-session.entity';
 
 export enum MessageRole {
   USER = 'user',
-  AI = 'ai'
+  AI = 'ai',
 }
 
 export enum CitationType {
@@ -42,7 +48,7 @@ export class ChatMessage {
   content: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  citations: FileCitation[] | FlashcardDeckCitation[] | QuizCitation[];
+  citations: (FileCitation | FlashcardDeckCitation | QuizCitation)[];
 
   @CreateDateColumn()
   createdAt: Date;
@@ -50,6 +56,6 @@ export class ChatMessage {
   @Column()
   chatSessionId: string;
 
-  @ManyToOne(() => ChatSession, chatSession => chatSession.messages)
+  @ManyToOne(() => ChatSession, (chatSession) => chatSession.messages)
   chatSession: ChatSession;
 }
