@@ -8,10 +8,8 @@ import { ChatMessage, MessageRole } from '../../entities/chat-message.entity';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  Pinecone,
-  SearchRecordsResponseResult,
-} from '@pinecone-database/pinecone';
+// Pinecone will be dynamically imported
+import type { SearchRecordsResponseResult } from '@pinecone-database/pinecone'; // Keep type-only import if SearchRecordsResponseResult is used as a type
 // Define citation interface for the AI responses
 export interface CitationInfo {
   fileId: string;
@@ -27,7 +25,7 @@ export class AiService implements OnModuleInit {
     flashPreview: string;
     flashLite: string;
   };
-  private pc: Pinecone;
+  private pc: any; // Was: Pinecone
 
   constructor(
     @Inject('CONFIG_SERVICE') private configService: ConfigService,
@@ -39,9 +37,6 @@ export class AiService implements OnModuleInit {
       flashPreview: 'gemini-2.5-flash-preview-05-20',
       flashLite: 'gemini-2.0-flash-lite',
     };
-    this.pc = new Pinecone({
-      apiKey: this.configService.get('PINECONE_API_KEY') as string,
-    });
   }
 
   async onModuleInit() {
@@ -56,6 +51,16 @@ export class AiService implements OnModuleInit {
         throw new Error('GOOGLE_API_KEY must be configured for AiService.');
       }
       this.gemini = new GoogleGenAI(apiKey);
+
+      // Dynamically import and initialize Pinecone
+      const pineconeModule = await import('@pinecone-database/pinecone');
+      const PineconeClient = pineconeModule.Pinecone; // Assuming 'Pinecone' is the class name, adjust if different
+      const pineconeApiKey = this.configService.get('PINECONE_API_KEY') as string;
+      if (!pineconeApiKey) {
+        console.error('AiService: PINECONE_API_KEY is not configured!');
+        throw new Error('PINECONE_API_KEY must be configured for AiService.');
+      }
+      this.pc = new PineconeClient({ apiKey: pineconeApiKey });
     } catch (error) {
       console.error('Failed to initialize AiService modules:', error);
       throw error; // Re-throw to ensure NestJS knows initialization failed
