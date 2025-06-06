@@ -33,9 +33,10 @@ export class SubscriptionService {
   }
 
   private async initializeDefaultPlans() {
-    const existingPlans = await this.subscriptionPlanRepository.find();
-    if (existingPlans.length === 0) {
-      await this.subscriptionPlanRepository.save([
+    try {
+      const existingPlans = await this.subscriptionPlanRepository.find();
+      if (existingPlans.length === 0) {
+        await this.subscriptionPlanRepository.save([
         {
           type: SubscriptionPlanType.FREE_TRIAL,
           name: 'Free Trial',
@@ -68,6 +69,11 @@ export class SubscriptionService {
           isActive: true,
         },
       ]);
+    }
+    } catch (error) {
+      console.error('Failed to initialize subscription plans:', error);
+      console.warn('Subscription feature will be limited or unavailable');
+      // Don't throw error, allow app to continue running
     }
   }
 
