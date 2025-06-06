@@ -1,4 +1,5 @@
 import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
+// Import only the types from @google/genai to avoid require() issues
 import type { Schema } from '@google/genai';
 import {
   FlashcardType,
@@ -21,9 +22,9 @@ export interface CitationInfo {
 
 @Injectable()
 export class AiService implements OnModuleInit {
-  private _GoogleGenAI: typeof import('@google/genai').GoogleGenAI;
-  private _Type: typeof import('@google/genai').Type;
-  private gemini: InstanceType<typeof import('@google/genai').GoogleGenAI>;
+  private _GoogleGenAI: any; // Using any temporarily to avoid typing issues
+  private _Type: any; // Using any temporarily to avoid typing issues
+  private gemini: any; // Will be initialized as GoogleGenAI instance
   private geminiModels: {
     flashPreview: string;
     flashLite: string;
@@ -46,13 +47,27 @@ export class AiService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    const genAIModule = await import('@google/genai');
-    this._GoogleGenAI = genAIModule.GoogleGenAI;
-    this._Type = genAIModule.Type;
-
-    this.gemini = new this._GoogleGenAI({
-      apiKey: this.configService.get('GEMINI_API_KEY'),
-    });
+    try {
+      // Use dynamic import with proper error handling
+      const module = await import('@google/genai');
+      
+      // Check that we have the required exports
+      if (!module.GoogleGenAI || !module.Type) {
+        throw new Error('Failed to import required classes from @google/genai');
+      }
+      
+      this._GoogleGenAI = module.GoogleGenAI;
+      this._Type = module.Type;
+      
+      this.gemini = new this._GoogleGenAI({
+        apiKey: this.configService.get('GEMINI_API_KEY'),
+      });
+      
+      console.log('Successfully initialized Google Gemini AI');
+    } catch (error) {
+      console.error('Failed to initialize Google Gemini AI:', error);
+      throw error; // Re-throw to prevent app from starting with broken AI service
+    }
   }
 
   async generateFlashcards(
