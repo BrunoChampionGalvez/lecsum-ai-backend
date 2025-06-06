@@ -1,5 +1,8 @@
 import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
-// Import only the types from @google/genai to avoid require() issues
+import { join } from 'path';
+import { promises as fs } from 'fs';
+
+// Only import types for type checking
 import type { Schema } from '@google/genai';
 import {
   FlashcardType,
@@ -22,9 +25,10 @@ export interface CitationInfo {
 
 @Injectable()
 export class AiService implements OnModuleInit {
-  private _GoogleGenAI: any; // Using any temporarily to avoid typing issues
-  private _Type: any; // Using any temporarily to avoid typing issues
-  private gemini: any; // Will be initialized as GoogleGenAI instance
+  // Define types for our wrapper
+  private gemini: any;
+  private _Type: any;
+  private wrapperPath: string;
   private geminiModels: {
     flashPreview: string;
     flashLite: string;
@@ -44,26 +48,52 @@ export class AiService implements OnModuleInit {
     this.pc = new Pinecone({
       apiKey: this.configService.get('PINECONE_API_KEY') as string,
     });
+    
+    // Calculate the path to our wrapper
+    this.wrapperPath = join(process.cwd(), 'dist', 'modules', 'ai', 'gemini-wrapper.mjs');
   }
 
   async onModuleInit() {
     try {
-      // Use dynamic import with proper error handling
-      const module = await import('@google/genai');
+      console.log(`Loading Gemini wrapper from: ${this.wrapperPath}`);
       
-      // Check that we have the required exports
-      if (!module.GoogleGenAI || !module.Type) {
-        throw new Error('Failed to import required classes from @google/genai');
+      // First, verify the wrapper file exists
+      try {
+        await fs.access(this.wrapperPath);
+      } catch (e) {
+        console.error(`Wrapper file not found at ${this.wrapperPath}. Error:`, e);
+        throw new Error(`Gemini wrapper file not found: ${this.wrapperPath}`);
       }
       
-      this._GoogleGenAI = module.GoogleGenAI;
-      this._Type = module.Type;
+      // Import the wrapper module using dynamic import
+      // The import URL needs to use file:// protocol for Node.js ESM imports
+      const wrapperUrl = `file://${this.wrapperPath}`;
+      console.log(`Importing from URL: ${wrapperUrl}`);
       
-      this.gemini = new this._GoogleGenAI({
-        apiKey: this.configService.get('GEMINI_API_KEY'),
-      });
+      const wrapper = await import(wrapperUrl);
       
-      console.log('Successfully initialized Google Gemini AI');
+      console.log('Wrapper module loaded. Available exports:', Object.keys(wrapper));
+      
+      // Check wrapper health
+      if (wrapper.checkHealth) {
+        const health = wrapper.checkHealth();
+        console.log('Wrapper health check:', health);
+      }
+      
+      // Initialize the gemini client using the wrapper
+      if (!wrapper.createGeminiClient) {
+        throw new Error('createGeminiClient function not found in wrapper');
+      }
+      
+      const apiKey = this.configService.get('GEMINI_API_KEY');
+      if (!apiKey) {
+        throw new Error('GEMINI_API_KEY not found in environment variables');
+      }
+      
+      this.gemini = wrapper.createGeminiClient(apiKey);
+      this._Type = wrapper.Type;
+      
+      console.log('Successfully initialized Google Gemini AI through wrapper');
     } catch (error) {
       console.error('Failed to initialize Google Gemini AI:', error);
       throw error; // Re-throw to prevent app from starting with broken AI service
