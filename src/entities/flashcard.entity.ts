@@ -60,7 +60,7 @@ export class Flashcard {
     nullable: true,
     onDelete: 'SET NULL',
   })
-  deck: Deck;
+  deck: any;
 
   @ManyToOne(() => Course, (course) => course.flashcards)
   course: Course;
