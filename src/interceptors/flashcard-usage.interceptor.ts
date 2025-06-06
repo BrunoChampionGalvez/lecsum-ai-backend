@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { UsageTrackingService } from '../services/usage-tracking.service.js';
+import { UsageTrackingService } from '../services/usage-tracking.service';
 import { Request } from 'express';
 
 interface UserPayload {
@@ -20,8 +20,8 @@ interface GenerateFlashcardsResponse {
 }
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Flashcard } from '../entities/flashcard.entity.js';
-import { Deck } from '../entities/deck.entity.js';
+import { Flashcard } from '../entities/flashcard.entity';
+import { Deck } from '../entities/deck.entity';
 
 @Injectable()
 export class FlashcardUsageInterceptor implements NestInterceptor {

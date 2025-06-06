@@ -3,13 +3,15 @@ import type { Schema } from '@google/genai';
 import {
   FlashcardType,
   DifficultyLevel,
-} from '../../entities/flashcard.entity.js';
-import { ChatMessage, MessageRole } from '../../entities/chat-message.entity.js';
+} from '../../entities/flashcard.entity';
+import { ChatMessage, MessageRole } from '../../entities/chat-message.entity';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-// Pinecone will be dynamically imported
-import type { SearchRecordsResponseResult } from '@pinecone-database/pinecone'; // Keep type-only import if SearchRecordsResponseResult is used as a type
+import {
+  Pinecone,
+  SearchRecordsResponseResult,
+} from '@pinecone-database/pinecone';
 // Define citation interface for the AI responses
 export interface CitationInfo {
   fileId: string;
@@ -19,13 +21,14 @@ export interface CitationInfo {
 
 @Injectable()
 export class AiService implements OnModuleInit {
-  private gemini: any; // Was: InstanceType<typeof import('@google/genai').GoogleGenAI>;
-  private Type: any;
+  private _GoogleGenAI: typeof import('@google/genai').GoogleGenAI;
+  private _Type: typeof import('@google/genai').Type;
+  private gemini: InstanceType<typeof import('@google/genai').GoogleGenAI>;
   private geminiModels: {
     flashPreview: string;
     flashLite: string;
   };
-  private pc: any; // Was: Pinecone
+  private pc: Pinecone;
 
   constructor(
     @Inject('CONFIG_SERVICE') private configService: ConfigService,
@@ -37,34 +40,19 @@ export class AiService implements OnModuleInit {
       flashPreview: 'gemini-2.5-flash-preview-05-20',
       flashLite: 'gemini-2.0-flash-lite',
     };
+    this.pc = new Pinecone({
+      apiKey: this.configService.get('PINECONE_API_KEY') as string,
+    });
   }
 
   async onModuleInit() {
-    try {
-      const genAIModule = await import('@google/genai');
-      const GoogleGenAI = genAIModule.GoogleGenAI;
-      this.Type = genAIModule.Type;
+    const genAIModule = await import('@google/genai');
+    this._GoogleGenAI = genAIModule.GoogleGenAI;
+    this._Type = genAIModule.Type;
 
-      const apiKey = this.configService.get('GOOGLE_API_KEY');
-      if (!apiKey) {
-        console.error('AiService: GOOGLE_API_KEY is not configured!');
-        throw new Error('GOOGLE_API_KEY must be configured for AiService.');
-      }
-      this.gemini = new GoogleGenAI(apiKey);
-
-      // Dynamically import and initialize Pinecone
-      const pineconeModule = await import('@pinecone-database/pinecone');
-      const PineconeClient = pineconeModule.Pinecone; // Assuming 'Pinecone' is the class name, adjust if different
-      const pineconeApiKey = this.configService.get('PINECONE_API_KEY') as string;
-      if (!pineconeApiKey) {
-        console.error('AiService: PINECONE_API_KEY is not configured!');
-        throw new Error('PINECONE_API_KEY must be configured for AiService.');
-      }
-      this.pc = new PineconeClient({ apiKey: pineconeApiKey });
-    } catch (error) {
-      console.error('Failed to initialize AiService modules:', error);
-      throw error; // Re-throw to ensure NestJS knows initialization failed
-    }
+    this.gemini = new this._GoogleGenAI({
+      apiKey: this.configService.get('GEMINI_API_KEY'),
+    });
   }
 
   async generateFlashcards(
@@ -134,24 +122,24 @@ export class AiService implements OnModuleInit {
           },
           maxOutputTokens: 8000,
           responseSchema: {
-            type: this.Type.ARRAY,
+            type: this._Type.ARRAY,
             maxItems: '30',
             minItems: '5',
             items: {
-              type: this.Type.OBJECT,
+              type: this._Type.OBJECT,
               properties: {
                 type: {
-                  type: this.Type.STRING,
+                  type: this._Type.STRING,
                   enum: ['qa', 'cloze'],
                 },
                 front: {
-                  type: this.Type.STRING,
+                  type: this._Type.STRING,
                 },
                 back: {
-                  type: this.Type.STRING,
+                  type: this._Type.STRING,
                 },
                 difficulty: {
-                  type: this.Type.STRING,
+                  type: this._Type.STRING,
                   enum: ['easy', 'moderate', 'hard'],
                 },
               },
@@ -246,23 +234,23 @@ export class AiService implements OnModuleInit {
           },
           maxOutputTokens: 8000,
           responseSchema: {
-            type: this.Type.ARRAY,
+            type: this._Type.ARRAY,
             maxItems: '30',
             minItems: '5',
             items: {
-              type: this.Type.OBJECT,
+              type: this._Type.OBJECT,
               properties: {
                 question: {
-                  type: this.Type.STRING,
+                  type: this._Type.STRING,
                 },
                 options: {
-                  type: this.Type.ARRAY,
+                  type: this._Type.ARRAY,
                   items: {
-                    type: this.Type.STRING,
+                    type: this._Type.STRING,
                   },
                 },
                 correctAnswer: {
-                  type: this.Type.STRING,
+                  type: this._Type.STRING,
                 },
               },
             },

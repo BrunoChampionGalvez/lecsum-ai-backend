@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { UserSubscription } from './user-subscription.entity.js';
+import { UserSubscription } from './user-subscription.entity';
 
 export enum SubscriptionPlanType {
   FREE_TRIAL = 'free_trial',

@@ -6,8 +6,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from './user.entity.js';
-import { SubscriptionPlan } from './subscription-plan.entity.js';
+import { User } from './user.entity';
+import { SubscriptionPlan } from './subscription-plan.entity';
 
 @Entity('user_subscriptions')
 export class UserSubscription {

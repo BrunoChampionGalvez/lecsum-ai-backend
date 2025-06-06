@@ -7,8 +7,8 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { UsageTrackingService } from '../services/usage-tracking.service.js';
-import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard.js';
+import { UsageTrackingService } from '../services/usage-tracking.service';
+import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 import { Request } from 'express';
 
 interface UserPayload {

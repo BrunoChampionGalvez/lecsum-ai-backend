@@ -9,9 +9,9 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
-import { DecksService } from './decks.service.js';
-import { Deck } from '../../entities/deck.entity.js';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { DecksService } from './decks.service';
+import { Deck } from '../../entities/deck.entity';
 
 interface UserPayload {
   id: string;

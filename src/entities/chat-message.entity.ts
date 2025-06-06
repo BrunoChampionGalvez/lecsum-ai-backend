@@ -5,7 +5,7 @@ import {
   ManyToOne,
   CreateDateColumn,
 } from 'typeorm';
-import { ChatSession } from './chat-session.entity.js';
+import { ChatSession } from './chat-session.entity';
 
 export enum MessageRole {
   USER = 'user',

@@ -1,5 +1,5 @@
 import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
-import { SubscriptionService } from '../services/subscription.service.js';
+import { SubscriptionService } from '../services/subscription.service';
 
 @Controller('public/subscription')
 export class PublicSubscriptionController {

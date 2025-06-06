@@ -6,12 +6,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Course } from './course.entity.js';
-import { ChatSession } from './chat-session.entity.js';
-import { Quiz } from './quiz.entity.js';
-import { Deck } from './deck.entity.js';
-import { UserSubscription } from './user-subscription.entity.js';
-import { SubscriptionUsage } from './subscription-usage.entity.js';
+import { Course } from './course.entity';
+import { ChatSession } from './chat-session.entity';
+import { Quiz } from './quiz.entity';
+import { Deck } from './deck.entity';
+import { UserSubscription } from './user-subscription.entity';
+import { SubscriptionUsage } from './subscription-usage.entity';
 
 @Entity('users')
 export class User {

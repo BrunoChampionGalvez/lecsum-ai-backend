@@ -11,11 +11,11 @@ import {
   Res,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
-import { AuthenticatedUserContext } from '../auth/jwt.strategy.js';
-import { ChatService } from './chat.service.js';
-import { ChatSession } from '../../entities/chat-session.entity.js';
-import { ChatMessage } from '../../entities/chat-message.entity.js';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AuthenticatedUserContext } from '../auth/jwt.strategy';
+import { ChatService } from './chat.service';
+import { ChatSession } from '../../entities/chat-session.entity';
+import { ChatMessage } from '../../entities/chat-message.entity';
 import { NotFoundException } from '@nestjs/common';
 
 @Controller('chat')

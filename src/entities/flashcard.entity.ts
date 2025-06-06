@@ -6,8 +6,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Course } from './course.entity.js';
-import { Deck } from './deck.entity.js';
+import { Course } from './course.entity';
+import { Deck } from './deck.entity';
 
 export enum FlashcardType {
   CLOZE = 'cloze',
@@ -60,7 +60,7 @@ export class Flashcard {
     nullable: true,
     onDelete: 'SET NULL',
   })
-  deck: any;
+  deck: Deck;
 
   @ManyToOne(() => Course, (course) => course.flashcards)
   course: Course;

@@ -9,10 +9,10 @@ import {
   HttpStatus,
   Patch,
 } from '@nestjs/common';
-import { SubscriptionService } from '../services/subscription.service.js';
-import { UsageTrackingService } from '../services/usage-tracking.service.js';
-import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard.js';
-import { SubscriptionPlanType } from '../entities/subscription-plan.entity.js';
+import { SubscriptionService } from '../services/subscription.service';
+import { UsageTrackingService } from '../services/usage-tracking.service';
+import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
+import { SubscriptionPlanType } from '../entities/subscription-plan.entity';
 import { Request } from 'express';
 
 interface UserPayload {

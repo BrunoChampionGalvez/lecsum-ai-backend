@@ -1,12 +1,7 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import * as dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-import path, { dirname, join } from 'path';
+import * as config from 'dotenv';
 
-dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+config.config();
 
 export const databaseConfig: TypeOrmModuleOptions = {
   type: 'postgres',
@@ -15,7 +10,7 @@ export const databaseConfig: TypeOrmModuleOptions = {
   username: process.env.DATABASE_USERNAME,
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
-  entities: [path.join(__dirname, '/../**/*.entity{.ts,.js}')],
-  synchronize: process.env.ENVIRONMENT !== 'production', // Set to false in production
+  entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+  synchronize: process.env.NODE_ENV !== 'production', // Set to false in production
   dropSchema: false,
 };

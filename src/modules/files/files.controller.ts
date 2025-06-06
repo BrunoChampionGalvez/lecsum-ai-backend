@@ -13,9 +13,9 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
-import { FilesService } from './files.service.js';
-import { File, FileType } from '../../entities/file.entity.js';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { FilesService } from './files.service';
+import { File, FileType } from '../../entities/file.entity';
 
 interface UserPayload {
   id: string;

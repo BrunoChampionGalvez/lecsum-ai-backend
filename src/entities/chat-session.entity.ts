@@ -7,8 +7,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from './user.entity.js';
-import { ChatMessage } from './chat-message.entity.js';
+import { User } from './user.entity';
+import { ChatMessage } from './chat-message.entity';
 
 @Entity('chat_sessions')
 export class ChatSession {

@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { UsageTrackingService } from '../services/usage-tracking.service.js';
+import { UsageTrackingService } from '../services/usage-tracking.service';
 import { Request } from 'express';
 
 interface UserPayload {
@@ -20,8 +20,8 @@ interface GenerateQuizResponse {
 }
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Quiz } from '../entities/quiz.entity.js';
-import { QuizQuestion } from '../entities/quiz-question.entity.js';
+import { Quiz } from '../entities/quiz.entity';
+import { QuizQuestion } from '../entities/quiz-question.entity';
 
 @Injectable()
 export class QuizUsageInterceptor implements NestInterceptor {

@@ -7,7 +7,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { UsageTrackingService } from '../services/usage-tracking.service.js';
+import { UsageTrackingService } from '../services/usage-tracking.service';
 import { Request } from 'express';
 
 interface UserPayload {
@@ -70,8 +70,11 @@ export class ChatMessageUsageInterceptor implements NestInterceptor {
       setTimeout(() => {
         void (async () => {
           try {
-            const usageType = thinkMode ? 'thinkMessagesUsed' : 'liteMessagesUsed';
-              await this.usageTrackingService.trackUsage(userId, usageType);
+            if (thinkMode) {
+              await this.usageTrackingService.trackThinkMessage(userId);
+            } else {
+              await this.usageTrackingService.trackLiteMessage(userId);
+            }
           } catch (err: unknown) {
             const prefix = 'Failed to track message usage';
             if (err instanceof Error) {

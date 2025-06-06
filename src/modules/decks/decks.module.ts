@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DecksController } from './decks.controller.js';
-import { DecksService } from './decks.service.js';
-import { Deck } from '../../entities/deck.entity.js';
-import { Flashcard } from '../../entities/flashcard.entity.js';
-import { CoursesModule } from '../courses/courses.module.js';
+import { DecksController } from './decks.controller';
+import { DecksService } from './decks.service';
+import { Deck } from '../../entities/deck.entity';
+import { Flashcard } from '../../entities/flashcard.entity';
+import { CoursesModule } from '../courses/courses.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Deck, Flashcard]), CoursesModule],

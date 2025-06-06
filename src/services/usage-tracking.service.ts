@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { SubscriptionUsage } from '../entities/subscription-usage.entity.js';
-import { SubscriptionService } from './subscription.service.js';
+import { SubscriptionUsage } from '../entities/subscription-usage.entity';
+import { SubscriptionService } from './subscription.service';
 
 @Injectable()
 export class UsageTrackingService {
@@ -24,17 +24,6 @@ export class UsageTrackingService {
    */
   async trackThinkMessage(userId: string): Promise<boolean> {
     return this.incrementUsage(userId, 'thinkMessagesUsed');
-  }
-
-  /**
-   * Generic method to track different types of usage.
-   * @param userId The ID of the user.
-   * @param usageType The type of usage to track (e.g., 'chatMessagesUsed', 'deckCreationsUsed').
-   * @returns A promise that resolves to true if usage was tracked successfully, false otherwise.
-   */
-  async trackUsage(userId: string, usageType: keyof SubscriptionUsage): Promise<boolean> {
-    // Assuming incrementUsage can handle any numeric keyof SubscriptionUsage
-    return this.incrementUsage(userId, usageType as any);
   }
 
   /**

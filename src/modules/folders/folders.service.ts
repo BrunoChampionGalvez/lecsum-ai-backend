@@ -7,10 +7,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull, In } from 'typeorm';
-import { Folder } from '../../entities/folder.entity.js';
-import { File } from '../../entities/file.entity.js';
-import { CoursesService } from '../courses/courses.service.js';
-import { CreateFolderDto } from './dto/create-folder.dto.js';
+import { Folder } from '../../entities/folder.entity';
+import { File } from '../../entities/file.entity';
+import { CoursesService } from '../courses/courses.service';
+import { CreateFolderDto } from './dto/create-folder.dto';
 
 @Injectable()
 export class FoldersService {

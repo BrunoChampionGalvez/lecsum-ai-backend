@@ -7,24 +7,24 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { ChatSession } from '../../entities/chat-session.entity.js';
-import { ChatMessage, MessageRole } from '../../entities/chat-message.entity.js';
-import { FilesService } from '../files/files.service.js';
-import { AiService } from '../ai/ai.service.js';
-import { CoursesService } from '../courses/courses.service.js';
-import { FoldersService } from '../folders/folders.service.js';
-import { Flashcard } from '../../entities/flashcard.entity.js';
-import { Deck } from '../../entities/deck.entity.js';
-import { Quiz } from '../../entities/quiz.entity.js';
-import { QuizQuestion } from '../../entities/quiz-question.entity.js';
-import { FlashcardsService } from '../flashcards/flashcards.service.js';
-import { QuizzesService } from '../quizzes/quizzes.service.js';
+import { ChatSession } from '../../entities/chat-session.entity';
+import { ChatMessage, MessageRole } from '../../entities/chat-message.entity';
+import { FilesService } from '../files/files.service';
+import { AiService } from '../ai/ai.service';
+import { CoursesService } from '../courses/courses.service';
+import { FoldersService } from '../folders/folders.service';
+import { Flashcard } from '../../entities/flashcard.entity';
+import { Deck } from '../../entities/deck.entity';
+import { Quiz } from '../../entities/quiz.entity';
+import { QuizQuestion } from '../../entities/quiz-question.entity';
+import { FlashcardsService } from '../flashcards/flashcards.service';
+import { QuizzesService } from '../quizzes/quizzes.service';
 import {
   CitationType,
   FileCitation,
   FlashcardDeckCitation,
   QuizCitation,
-} from '../../entities/chat-message.entity.js';
+} from '../../entities/chat-message.entity';
 
 // Interfaces for typing service responses
 interface FlashcardItem {

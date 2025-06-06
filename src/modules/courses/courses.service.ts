@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Course } from '../../entities/course.entity.js';
-import { File } from '../../entities/file.entity.js';
-import { FoldersService } from '../folders/folders.service.js';
+import { Course } from '../../entities/course.entity';
+import { File } from 'src/entities/file.entity';
+import { FoldersService } from '../folders/folders.service';
 
 @Injectable()
 export class CoursesService {

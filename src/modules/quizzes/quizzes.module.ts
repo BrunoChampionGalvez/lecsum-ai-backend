@@ -1,17 +1,17 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { Quiz } from '../../entities/quiz.entity.js';
-import { QuizQuestion } from '../../entities/quiz-question.entity.js';
-import { QuizzesService } from './quizzes.service.js';
-import { QuizzesController } from './quizzes.controller.js';
-import { CoursesModule } from '../courses/courses.module.js';
-import { FilesModule } from '../files/files.module.js';
-import { AiModule } from '../ai/ai.module.js';
-import { FoldersModule } from '../folders/folders.module.js';
-import { UsersModule } from '../users/users.module.js';
-import { SubscriptionModule } from '../../subscription/subscription.module.js';
-import { QuizUsageInterceptor } from '../../interceptors/quiz-usage.interceptor.js';
+import { Quiz } from '../../entities/quiz.entity';
+import { QuizQuestion } from '../../entities/quiz-question.entity';
+import { QuizzesService } from './quizzes.service';
+import { QuizzesController } from './quizzes.controller';
+import { CoursesModule } from '../courses/courses.module';
+import { FilesModule } from '../files/files.module';
+import { AiModule } from '../ai/ai.module';
+import { FoldersModule } from '../folders/folders.module';
+import { UsersModule } from '../users/users.module';
+import { SubscriptionModule } from '../../subscription/subscription.module';
+import { QuizUsageInterceptor } from '../../interceptors/quiz-usage.interceptor';
 
 @Module({
   imports: [

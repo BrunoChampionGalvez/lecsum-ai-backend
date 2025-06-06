@@ -7,10 +7,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Course } from './course.entity.js';
-import { QuizQuestion } from './quiz-question.entity.js';
-import { DifficultyLevel } from './flashcard.entity.js';
-import { User } from './user.entity.js';
+import { Course } from './course.entity';
+import { QuizQuestion } from './quiz-question.entity';
+import { DifficultyLevel } from './flashcard.entity';
+import { User } from './user.entity';
 
 @Entity('quizzes')
 export class Quiz {

@@ -7,12 +7,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from './user.entity.js';
-import { Deck } from './deck.entity.js';
-import { File } from './file.entity.js';
-import { Folder } from './folder.entity.js';
-import { Quiz } from './quiz.entity.js';
-import { Flashcard } from './flashcard.entity.js';
+import { User } from './user.entity';
+import { Deck } from './deck.entity';
+import { File } from './file.entity';
+import { Folder } from './folder.entity';
+import { Quiz } from './quiz.entity';
+import { Flashcard } from './flashcard.entity';
 
 @Entity('courses')
 export class Course {

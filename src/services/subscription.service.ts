@@ -4,10 +4,10 @@ import { Repository } from 'typeorm';
 import {
   SubscriptionPlan,
   SubscriptionPlanType,
-} from '../entities/subscription-plan.entity.js';
-import { UserSubscription } from '../entities/user-subscription.entity.js';
-import { SubscriptionUsage } from '../entities/subscription-usage.entity.js';
-import { User } from '../entities/user.entity.js';
+} from '../entities/subscription-plan.entity';
+import { UserSubscription } from '../entities/user-subscription.entity';
+import { SubscriptionUsage } from '../entities/subscription-usage.entity';
+import { User } from '../entities/user.entity';
 
 interface SubscriptionLimits {
   liteMessageLimit: number;

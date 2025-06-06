@@ -6,7 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Quiz } from './quiz.entity.js';
+import { Quiz } from './quiz.entity';
 
 @Entity('quiz_questions')
 export class QuizQuestion {
