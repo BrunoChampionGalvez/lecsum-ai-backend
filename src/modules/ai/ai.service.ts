@@ -48,54 +48,66 @@ export class AiService implements OnModuleInit {
     this.pc = new Pinecone({
       apiKey: this.configService.get('PINECONE_API_KEY') as string,
     });
-    
+
     // Calculate the path to our wrapper
-    this.wrapperPath = join(process.cwd(), 'dist', 'modules', 'ai', 'gemini-wrapper.mjs');
+    this.wrapperPath = join(
+      process.cwd(),
+      'dist',
+      'modules',
+      'ai',
+      'gemini-wrapper.mjs',
+    );
   }
 
   async onModuleInit() {
     try {
       console.log('Attempting to initialize Google Gemini AI');
-      
+
       // Try to dynamically import the ES module
       const genAIModule = await import('@google/genai');
       console.log('Successfully imported @google/genai module');
-      
+
       const apiKey = this.configService.get('GEMINI_API_KEY');
       if (!apiKey) {
         throw new Error('GEMINI_API_KEY not found in environment variables');
       }
-      
+
       this.gemini = new genAIModule.GoogleGenAI({ apiKey });
       this._Type = genAIModule.Type;
-      
+
       console.log('Successfully initialized Google Gemini AI');
     } catch (error) {
       // If any error occurs during initialization, create a mock implementation
       // instead of crashing the application
       console.error('Failed to initialize Google Gemini AI:', error);
-      console.warn('AI service will run in DISABLED mode - AI features will return empty results');
-      
+      console.warn(
+        'AI service will run in DISABLED mode - AI features will return empty results',
+      );
+
       // Set up mock implementations to prevent crashes
       this.gemini = {
         models: {
           generateContent: async () => ({ text: '[]' }),
-          generateContentStream: async function* () { 
-            yield { 
+          generateContentStream: async function* () {
+            yield {
               candidates: [
-                { content: { parts: [{ text: 'AI service is currently unavailable' }] } }
-              ] 
+                {
+                  content: {
+                    parts: [{ text: 'AI service is currently unavailable' }],
+                  },
+                },
+              ],
             };
-          }
-        }
+          },
+        },
       };
-      
-      this._Type = { 
-        ARRAY: 'ARRAY', 
+
+      this._Type = {
+        ARRAY: 'ARRAY',
         OBJECT: 'OBJECT',
-        STRING: 'STRING' 
+        STRING: 'STRING',
       };
-      
+
       // Don't throw error, allow app to continue running with disabled AI
     }
   }

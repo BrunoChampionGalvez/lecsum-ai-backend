@@ -72,16 +72,20 @@ export class FlashcardUsageInterceptor implements NestInterceptor {
       // Proceed with the request and handle the response
       return next.handle().pipe(
         tap((response: GenerateFlashcardsResponse) => {
+          console.log('[FlashcardUsageInterceptor] Response from next.handle():', JSON.stringify(response, null, 2)); // Log the whole response
           void (async () => {
             // The response should contain the created deck and its flashcards
             if (response && response.id) {
+              console.log(`[FlashcardUsageInterceptor] Response ID found: ${response.id}`);
               try {
                 // Count the number of flashcards created
                 const flashcardsCount = await this.flashcardRepository.count({
                   where: { deckId: response.id },
                 });
+                console.log(`[FlashcardUsageInterceptor] Flashcards count for deckId ${response.id}: ${flashcardsCount}`);
 
                 if (flashcardsCount > 0) {
+                  console.log('[FlashcardUsageInterceptor] flashcardsCount > 0 is true, proceeding to track.');
                   // Track the flashcards usage
                   await this.usageTrackingService.trackFlashcards(
                     userId,
@@ -90,6 +94,8 @@ export class FlashcardUsageInterceptor implements NestInterceptor {
                   console.log(
                     `Tracked ${flashcardsCount} flashcards for user ${userId}`,
                   );
+                } else {
+                  console.log('[FlashcardUsageInterceptor] flashcardsCount is 0 or less, not tracking.');
                 }
               } catch (error: unknown) {
                 const prefix = 'Failed to track flashcard usage';
@@ -111,6 +117,8 @@ export class FlashcardUsageInterceptor implements NestInterceptor {
                   );
                 }
               }
+            } else {
+              console.log('[FlashcardUsageInterceptor] Response or response.id is missing. Response:', JSON.stringify(response, null, 2));
             }
           })();
         }),

@@ -37,39 +37,39 @@ export class SubscriptionService {
       const existingPlans = await this.subscriptionPlanRepository.find();
       if (existingPlans.length === 0) {
         await this.subscriptionPlanRepository.save([
-        {
-          type: SubscriptionPlanType.FREE_TRIAL,
-          name: 'Free Trial',
-          description: 'Try LecSum AI features for free for one week',
-          liteMessageLimit: 40,
-          thinkMessageLimit: 0,
-          flashcardsLimit: 50,
-          quizQuestionsLimit: 50,
-          trialDurationDays: 7,
-          isActive: true,
-        },
-        {
-          type: SubscriptionPlanType.STARTER,
-          name: 'Starter Plan',
-          description: 'Basic features for beginners',
-          liteMessageLimit: 150,
-          thinkMessageLimit: 30,
-          flashcardsLimit: 300,
-          quizQuestionsLimit: 300,
-          isActive: true,
-        },
-        {
-          type: SubscriptionPlanType.PRO,
-          name: 'Pro Plan',
-          description: 'All premium features',
-          liteMessageLimit: 300,
-          thinkMessageLimit: 60,
-          flashcardsLimit: 600,
-          quizQuestionsLimit: 600,
-          isActive: true,
-        },
-      ]);
-    }
+          {
+            type: SubscriptionPlanType.FREE_TRIAL,
+            name: 'Free Trial',
+            description: 'Try LecSum AI features for free for one week',
+            liteMessageLimit: 40,
+            thinkMessageLimit: 0,
+            flashcardsLimit: 50,
+            quizQuestionsLimit: 50,
+            trialDurationDays: 7,
+            isActive: true,
+          },
+          {
+            type: SubscriptionPlanType.STARTER,
+            name: 'Starter Plan',
+            description: 'Basic features for beginners',
+            liteMessageLimit: 150,
+            thinkMessageLimit: 30,
+            flashcardsLimit: 300,
+            quizQuestionsLimit: 300,
+            isActive: true,
+          },
+          {
+            type: SubscriptionPlanType.PRO,
+            name: 'Pro Plan',
+            description: 'All premium features',
+            liteMessageLimit: 300,
+            thinkMessageLimit: 60,
+            flashcardsLimit: 600,
+            quizQuestionsLimit: 600,
+            isActive: true,
+          },
+        ]);
+      }
     } catch (error) {
       console.error('Failed to initialize subscription plans:', error);
       console.warn('Subscription feature will be limited or unavailable');
