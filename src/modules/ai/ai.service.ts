@@ -1,5 +1,5 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { GoogleGenAI, Schema, Type } from '@google/genai';
+import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
+import type { Schema } from '@google/genai';
 import {
   FlashcardType,
   DifficultyLevel,
@@ -20,8 +20,10 @@ export interface CitationInfo {
 }
 
 @Injectable()
-export class AiService {
-  private gemini: GoogleGenAI;
+export class AiService implements OnModuleInit {
+  private _GoogleGenAI: typeof import('@google/genai').GoogleGenAI;
+  private _Type: typeof import('@google/genai').Type;
+  private gemini: InstanceType<typeof import('@google/genai').GoogleGenAI>;
   private geminiModels: {
     flashPreview: string;
     flashLite: string;
@@ -33,15 +35,23 @@ export class AiService {
     @InjectRepository(ChatMessage)
     private chatMessagesRepository: Repository<ChatMessage>,
   ) {
-    this.gemini = new GoogleGenAI({
-      apiKey: this.configService.get('GEMINI_API_KEY'),
-    });
+    // this.gemini initialization moved to onModuleInit
     this.geminiModels = {
       flashPreview: 'gemini-2.5-flash-preview-05-20',
       flashLite: 'gemini-2.0-flash-lite',
     };
     this.pc = new Pinecone({
       apiKey: this.configService.get('PINECONE_API_KEY') as string,
+    });
+  }
+
+  async onModuleInit() {
+    const genAIModule = await import('@google/genai');
+    this._GoogleGenAI = genAIModule.GoogleGenAI;
+    this._Type = genAIModule.Type;
+
+    this.gemini = new this._GoogleGenAI({
+      apiKey: this.configService.get('GEMINI_API_KEY'),
     });
   }
 
@@ -112,24 +122,24 @@ export class AiService {
           },
           maxOutputTokens: 8000,
           responseSchema: {
-            type: Type.ARRAY,
+            type: this._Type.ARRAY,
             maxItems: '30',
             minItems: '5',
             items: {
-              type: Type.OBJECT,
+              type: this._Type.OBJECT,
               properties: {
                 type: {
-                  type: Type.STRING,
+                  type: this._Type.STRING,
                   enum: ['qa', 'cloze'],
                 },
                 front: {
-                  type: Type.STRING,
+                  type: this._Type.STRING,
                 },
                 back: {
-                  type: Type.STRING,
+                  type: this._Type.STRING,
                 },
                 difficulty: {
-                  type: Type.STRING,
+                  type: this._Type.STRING,
                   enum: ['easy', 'moderate', 'hard'],
                 },
               },
@@ -224,23 +234,23 @@ export class AiService {
           },
           maxOutputTokens: 8000,
           responseSchema: {
-            type: Type.ARRAY,
+            type: this._Type.ARRAY,
             maxItems: '30',
             minItems: '5',
             items: {
-              type: Type.OBJECT,
+              type: this._Type.OBJECT,
               properties: {
                 question: {
-                  type: Type.STRING,
+                  type: this._Type.STRING,
                 },
                 options: {
-                  type: Type.ARRAY,
+                  type: this._Type.ARRAY,
                   items: {
-                    type: Type.STRING,
+                    type: this._Type.STRING,
                   },
                 },
                 correctAnswer: {
-                  type: Type.STRING,
+                  type: this._Type.STRING,
                 },
               },
             },
