@@ -9,11 +9,11 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { DeckService } from './deck.service';
-import { Deck } from '../../entities/deck.entity';
-import { FlashcardsService } from './flashcards.service'; // Adjust import if needed
-import { Flashcard } from '../../entities/flashcard.entity';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import { DeckService } from './deck.service.js';
+import { Deck } from '../../entities/deck.entity.js';
+import { FlashcardsService } from './flashcards.service.js'; // Adjust import if needed
+import { Flashcard } from '../../entities/flashcard.entity.js';
 
 interface UserPayload {
   id: string;

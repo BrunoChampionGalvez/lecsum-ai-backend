@@ -9,13 +9,13 @@ import {
   Flashcard,
   FlashcardType,
   DifficultyLevel,
-} from '../../entities/flashcard.entity';
-import { CoursesService } from '../courses/courses.service';
-import { FilesService } from '../files/files.service';
-import { AiService } from '../ai/ai.service';
-import { FoldersService } from '../folders/folders.service';
-import { Deck } from '../../entities/deck.entity';
-import { UsersService } from '../users/users.service';
+} from '../../entities/flashcard.entity.js';
+import { CoursesService } from '../courses/courses.service.js';
+import { FilesService } from '../files/files.service.js';
+import { AiService } from '../ai/ai.service.js';
+import { FoldersService } from '../folders/folders.service.js';
+import { Deck } from '../../entities/deck.entity.js';
+import { UsersService } from '../users/users.service.js';
 
 interface AIGeneratedFlashcard {
   type: FlashcardType;

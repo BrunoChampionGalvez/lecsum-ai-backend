@@ -7,9 +7,9 @@ import {
   UseGuards,
   NotFoundException,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { User } from '../../entities/user.entity';
+import { UsersService } from './users.service.js';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import { User } from '../../entities/user.entity.js';
 
 @Controller('users')
 export class UsersController {

@@ -10,8 +10,8 @@ import {
   TreeChildren,
   TreeParent,
 } from 'typeorm';
-import { Course } from './course.entity';
-import { File } from './file.entity';
+import { Course } from './course.entity.js';
+import { File } from './file.entity.js';
 
 @Entity('folders')
 @Tree('materialized-path')

@@ -9,11 +9,11 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { FoldersService } from './folders.service';
-import { Folder } from '../../entities/folder.entity';
-import { File } from '../../entities/file.entity';
-import { CreateFolderDto } from './dto/create-folder.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import { FoldersService } from './folders.service.js';
+import { Folder } from '../../entities/folder.entity.js';
+import { File } from '../../entities/file.entity.js';
+import { CreateFolderDto } from './dto/create-folder.dto.js';
 
 interface UserPayload {
   id: string;

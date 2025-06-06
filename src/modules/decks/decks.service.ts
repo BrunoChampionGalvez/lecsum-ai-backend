@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { Deck } from '../../entities/deck.entity';
-import { Flashcard } from '../../entities/flashcard.entity';
-import { CoursesService } from '../courses/courses.service';
+import { Deck } from '../../entities/deck.entity.js';
+import { Flashcard } from '../../entities/flashcard.entity.js';
+import { CoursesService } from '../courses/courses.service.js';
 
 @Injectable()
 export class DecksService {

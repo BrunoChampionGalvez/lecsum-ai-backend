@@ -9,9 +9,9 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import { CoursesService } from './courses.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { Course } from '../../entities/course.entity';
+import { CoursesService } from './courses.service.js';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import { Course } from '../../entities/course.entity.js';
 
 interface UserPayload {
   id: string;

@@ -9,11 +9,11 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { QuizzesService } from './quizzes.service';
-import { Quiz } from '../../entities/quiz.entity';
-import { DifficultyLevel } from '../../entities/flashcard.entity';
-import { QuizQuestion } from 'src/entities/quiz-question.entity';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import { QuizzesService } from './quizzes.service.js';
+import { Quiz } from '../../entities/quiz.entity.js';
+import { DifficultyLevel } from '../../entities/flashcard.entity.js';
+import { QuizQuestion } from '../../entities/quiz-question.entity.js';
 
 interface UserPayload {
   id: string;

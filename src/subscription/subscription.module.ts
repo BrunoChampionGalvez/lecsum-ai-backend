@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { SubscriptionService } from '../services/subscription.service';
-import { UsageTrackingService } from '../services/usage-tracking.service';
-import { SubscriptionController } from '../controllers/subscription.controller';
-import { UsageTrackingController } from '../controllers/usage-tracking.controller';
-import { PublicSubscriptionController } from '../controllers/public-subscription.controller';
-import { SubscriptionPlan } from '../entities/subscription-plan.entity';
-import { UserSubscription } from '../entities/user-subscription.entity';
-import { SubscriptionUsage } from '../entities/subscription-usage.entity';
-import { User } from '../entities/user.entity';
+import { SubscriptionService } from '../services/subscription.service.js';
+import { UsageTrackingService } from '../services/usage-tracking.service.js';
+import { SubscriptionController } from '../controllers/subscription.controller.js';
+import { UsageTrackingController } from '../controllers/usage-tracking.controller.js';
+import { PublicSubscriptionController } from '../controllers/public-subscription.controller.js';
+import { SubscriptionPlan } from '../entities/subscription-plan.entity.js';
+import { UserSubscription } from '../entities/user-subscription.entity.js';
+import { SubscriptionUsage } from '../entities/subscription-usage.entity.js';
+import { User } from '../entities/user.entity.js';
 
 @Module({
   imports: [

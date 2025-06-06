@@ -1,19 +1,19 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { Flashcard } from '../../entities/flashcard.entity';
-import { Deck } from '../../entities/deck.entity';
-import { FlashcardsService } from './flashcards.service';
-import { FlashcardsController } from './flashcards.controller';
-import { DeckService } from './deck.service';
-import { DeckController } from './deck.controller';
-import { CoursesModule } from '../courses/courses.module';
-import { FilesModule } from '../files/files.module';
-import { AiModule } from '../ai/ai.module';
-import { FoldersModule } from '../folders/folders.module';
-import { UsersModule } from '../users/users.module';
-import { SubscriptionModule } from '../../subscription/subscription.module';
-import { FlashcardUsageInterceptor } from '../../interceptors/flashcard-usage.interceptor';
+import { Flashcard } from '../../entities/flashcard.entity.js';
+import { Deck } from '../../entities/deck.entity.js';
+import { FlashcardsService } from './flashcards.service.js';
+import { FlashcardsController } from './flashcards.controller.js';
+import { DeckService } from './deck.service.js';
+import { DeckController } from './deck.controller.js';
+import { CoursesModule } from '../courses/courses.module.js';
+import { FilesModule } from '../files/files.module.js';
+import { AiModule } from '../ai/ai.module.js';
+import { FoldersModule } from '../folders/folders.module.js';
+import { UsersModule } from '../users/users.module.js';
+import { SubscriptionModule } from '../../subscription/subscription.module.js';
+import { FlashcardUsageInterceptor } from '../../interceptors/flashcard-usage.interceptor.js';
 
 @Module({
   imports: [

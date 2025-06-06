@@ -6,8 +6,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Course } from './course.entity';
-import { Folder } from './folder.entity';
+import { Course } from './course.entity.js';
+import { Folder } from './folder.entity.js';
 
 export enum FileType {
   PDF = 'pdf',

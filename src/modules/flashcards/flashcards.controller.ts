@@ -9,13 +9,13 @@ import {
   Request,
   HttpCode,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { FlashcardsService } from './flashcards.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import { FlashcardsService } from './flashcards.service.js';
 import {
   Flashcard,
   FlashcardType,
   DifficultyLevel,
-} from '../../entities/flashcard.entity';
+} from '../../entities/flashcard.entity.js';
 
 interface UserPayload {
   id: string;

@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AiService } from './ai.service';
-import { geminiConfig } from '../../config/gemini.config';
-import { ChatMessage } from '../../entities/chat-message.entity';
+import { AiService } from './ai.service.js';
+import { geminiConfig } from '../../config/gemini.config.js';
+import { ChatMessage } from '../../entities/chat-message.entity.js';
 
 @Module({
   imports: [ConfigModule, TypeOrmModule.forFeature([ChatMessage])],

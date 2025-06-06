@@ -6,8 +6,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Course } from './course.entity';
-import { Deck } from './deck.entity';
+import { Course } from './course.entity.js';
+import { Deck } from './deck.entity.js';
 
 export enum FlashcardType {
   CLOZE = 'cloze',

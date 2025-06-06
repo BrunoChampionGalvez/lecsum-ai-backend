@@ -5,9 +5,9 @@ import {
   OneToMany,
   ManyToOne,
 } from 'typeorm';
-import { Flashcard } from './flashcard.entity';
-import { Course } from './course.entity';
-import { User } from './user.entity';
+import { Flashcard } from './flashcard.entity.js';
+import { Course } from './course.entity.js';
+import { User } from './user.entity.js';
 
 @Entity()
 export class Deck {

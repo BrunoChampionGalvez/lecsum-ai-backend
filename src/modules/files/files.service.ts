@@ -8,12 +8,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import * as fs from 'fs';
 import { promisify } from 'util';
-import { File, FileType } from '../../entities/file.entity';
-import { Folder } from '../../entities/folder.entity';
-import { CoursesService } from '../courses/courses.service';
+import { File, FileType } from '../../entities/file.entity.js';
+import { Folder } from '../../entities/folder.entity.js';
+import { CoursesService } from '../courses/courses.service.js';
 import { PDFExtract } from 'pdf.js-extract';
 import * as mammoth from 'mammoth';
-import { AiService } from '../ai/ai.service';
+import { AiService } from '../ai/ai.service.js';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { ConfigService } from '@nestjs/config';
 

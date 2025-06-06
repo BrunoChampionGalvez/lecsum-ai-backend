@@ -3,8 +3,8 @@ import type { Schema } from '@google/genai';
 import {
   FlashcardType,
   DifficultyLevel,
-} from '../../entities/flashcard.entity';
-import { ChatMessage, MessageRole } from '../../entities/chat-message.entity';
+} from '../../entities/flashcard.entity.js';
+import { ChatMessage, MessageRole } from '../../entities/chat-message.entity.js';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';

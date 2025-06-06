@@ -4,11 +4,11 @@ import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule } from '@nestjs/config';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import { File } from '../../entities/file.entity';
-import { FilesService } from './files.service';
-import { FilesController } from './files.controller';
-import { CoursesModule } from '../courses/courses.module';
-import { AiModule } from '../ai/ai.module';
+import { File } from '../../entities/file.entity.js';
+import { FilesService } from './files.service.js';
+import { FilesController } from './files.controller.js';
+import { CoursesModule } from '../courses/courses.module.js';
+import { AiModule } from '../ai/ai.module.js';
 @Module({
   imports: [
     TypeOrmModule.forFeature([File]),

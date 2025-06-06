@@ -1,7 +1,7 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
-import { jwtConfig } from '../../config/jwt.config';
+import { jwtConfig } from '../../config/jwt.config.js';
 
 // Define the expected shape of the JWT payload
 interface JwtPayload {
