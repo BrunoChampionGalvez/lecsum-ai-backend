@@ -43,8 +43,16 @@ async function bootstrap() {
     `CORS enabled for ${process.env.FRONTEND_URL || 'http://localhost:3000'}`,
   );
 
-  await app.listen(process.env.PORT ?? 3001);
-  console.log(`Application is running on: ${await app.getUrl()}`);
+  await app.listen(process.env.PORT ?? 3001, '0.0.0.0');
+  const port = process.env.PORT ?? 3001;
+  let appUrl: string;
+  if (process.env.ENVIRONMENT === 'production') {
+    appUrl = await app.getUrl();
+  } else {
+    // Default to localhost for development or if ENVIRONMENT is not 'production'
+    appUrl = `http://localhost:${port}`;
+  }
+  console.log(`Application is running on: ${appUrl}`);
 }
 bootstrap().catch((error) => {
   // Use console.error here as NestJS Logger might not be initialized if bootstrap fails early
