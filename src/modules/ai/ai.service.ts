@@ -55,48 +55,48 @@ export class AiService implements OnModuleInit {
 
   async onModuleInit() {
     try {
-      console.log(`Loading Gemini wrapper from: ${this.wrapperPath}`);
+      console.log('Attempting to initialize Google Gemini AI');
       
-      // First, verify the wrapper file exists
-      try {
-        await fs.access(this.wrapperPath);
-      } catch (e) {
-        console.error(`Wrapper file not found at ${this.wrapperPath}. Error:`, e);
-        throw new Error(`Gemini wrapper file not found: ${this.wrapperPath}`);
-      }
-      
-      // Import the wrapper module using dynamic import
-      // The import URL needs to use file:// protocol for Node.js ESM imports
-      const wrapperUrl = `file://${this.wrapperPath}`;
-      console.log(`Importing from URL: ${wrapperUrl}`);
-      
-      const wrapper = await import(wrapperUrl);
-      
-      console.log('Wrapper module loaded. Available exports:', Object.keys(wrapper));
-      
-      // Check wrapper health
-      if (wrapper.checkHealth) {
-        const health = wrapper.checkHealth();
-        console.log('Wrapper health check:', health);
-      }
-      
-      // Initialize the gemini client using the wrapper
-      if (!wrapper.createGeminiClient) {
-        throw new Error('createGeminiClient function not found in wrapper');
-      }
+      // Try to dynamically import the ES module
+      const genAIModule = await import('@google/genai');
+      console.log('Successfully imported @google/genai module');
       
       const apiKey = this.configService.get('GEMINI_API_KEY');
       if (!apiKey) {
         throw new Error('GEMINI_API_KEY not found in environment variables');
       }
       
-      this.gemini = wrapper.createGeminiClient(apiKey);
-      this._Type = wrapper.Type;
+      this.gemini = new genAIModule.GoogleGenAI({ apiKey });
+      this._Type = genAIModule.Type;
       
-      console.log('Successfully initialized Google Gemini AI through wrapper');
+      console.log('Successfully initialized Google Gemini AI');
     } catch (error) {
+      // If any error occurs during initialization, create a mock implementation
+      // instead of crashing the application
       console.error('Failed to initialize Google Gemini AI:', error);
-      throw error; // Re-throw to prevent app from starting with broken AI service
+      console.warn('AI service will run in DISABLED mode - AI features will return empty results');
+      
+      // Set up mock implementations to prevent crashes
+      this.gemini = {
+        models: {
+          generateContent: async () => ({ text: '[]' }),
+          generateContentStream: async function* () { 
+            yield { 
+              candidates: [
+                { content: { parts: [{ text: 'AI service is currently unavailable' }] } }
+              ] 
+            };
+          }
+        }
+      };
+      
+      this._Type = { 
+        ARRAY: 'ARRAY', 
+        OBJECT: 'OBJECT',
+        STRING: 'STRING' 
+      };
+      
+      // Don't throw error, allow app to continue running with disabled AI
     }
   }
 
