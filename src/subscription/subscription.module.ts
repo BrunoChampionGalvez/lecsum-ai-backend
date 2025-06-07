@@ -9,6 +9,8 @@ import { SubscriptionPlan } from '../entities/subscription-plan.entity';
 import { UserSubscription } from '../entities/user-subscription.entity';
 import { SubscriptionUsage } from '../entities/subscription-usage.entity';
 import { User } from '../entities/user.entity';
+import { Flashcard } from '../entities/flashcard.entity'; // Add import
+import { QuizQuestion } from '../entities/quiz-question.entity'; // Add import
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { User } from '../entities/user.entity';
       UserSubscription,
       SubscriptionUsage,
       User,
+      Flashcard,       // Add entity
+      QuizQuestion,    // Add entity
     ]),
   ],
   controllers: [
