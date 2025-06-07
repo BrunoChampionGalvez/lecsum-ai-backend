@@ -138,6 +138,36 @@ export class UsageTrackingService {
   }
 
   /**
+   * Directly set the absolute usage count for a feature.
+   * This is intended for data correction or administrative purposes.
+   */
+  async setAbsoluteUsageCount(
+    userId: string,
+    usageType: 'flashcardsGenerated' | 'quizQuestionsGenerated',
+    count: number,
+  ): Promise<void> {
+    let usage = await this.subscriptionUsageRepository.findOne({
+      where: { userId },
+    });
+
+    if (!usage) {
+      // If no usage record exists, create one, respecting existing logic for defaults.
+      usage = this.subscriptionUsageRepository.create({
+        userId,
+        liteMessagesUsed: 0, // Default value
+        thinkMessagesUsed: 0, // Default value
+        flashcardsGenerated: 0,
+        quizQuestionsGenerated: 0,
+        lastResetDate: new Date(), // Default value
+      });
+    }
+
+    usage[usageType] = count;
+    await this.subscriptionUsageRepository.save(usage);
+    console.log(`[UsageTrackingService] Set ${usageType} to ${count} for user ${userId}`);
+  }
+
+  /**
    * Increment a specific usage counter
    */
   private async incrementUsage(

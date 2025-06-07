@@ -8,6 +8,9 @@ import {
 import { UserSubscription } from '../entities/user-subscription.entity';
 import { SubscriptionUsage } from '../entities/subscription-usage.entity';
 import { User } from '../entities/user.entity';
+import { Flashcard } from '../entities/flashcard.entity';
+import { QuizQuestion } from '../entities/quiz-question.entity';
+import { UsageTrackingService } from './usage-tracking.service';
 
 interface SubscriptionLimits {
   liteMessageLimit: number;
@@ -26,7 +29,12 @@ export class SubscriptionService {
     @InjectRepository(SubscriptionUsage)
     private subscriptionUsageRepository: Repository<SubscriptionUsage>,
     @InjectRepository(User)
-    private userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(Flashcard)
+    private readonly flashcardRepository: Repository<Flashcard>,
+    @InjectRepository(QuizQuestion)
+    private readonly quizQuestionRepository: Repository<QuizQuestion>,
+    private readonly usageTrackingService: UsageTrackingService,
   ) {
     // Initialize default plans if they don't exist
     void this.initializeDefaultPlans();
@@ -354,5 +362,54 @@ export class SubscriptionService {
         type: 'ASC',
       },
     });
+  }
+
+  /**
+   * Recalculates and updates the historical usage counts for flashcards and quiz questions
+   * for all users. This is intended as a one-time data correction or periodic admin task.
+   */
+  async recalculateHistoricalUsageForAllUsers(): Promise<void> {
+    console.log('[SubscriptionService] Starting recalculation of historical usage for all users...');
+    const users = await this.userRepository.find();
+    let updatedCount = 0;
+    let failedCount = 0;
+
+    for (const user of users) {
+      try {
+        // Recalculate flashcards
+        // Flashcards are linked to a course, and a course is linked to a user.
+        const flashcardCount = await this.flashcardRepository
+          .createQueryBuilder('flashcard')
+          .innerJoin('flashcard.course', 'course') // Ensure 'course' alias is used for the join
+          .where('course.userId = :userId', { userId: user.id })
+          .getCount();
+
+        await this.usageTrackingService.setAbsoluteUsageCount(
+          user.id,
+          'flashcardsGenerated',
+          flashcardCount,
+        );
+
+        // Recalculate quiz questions
+        // QuizQuestions are linked to a quiz, and a quiz is linked to a user.
+        const quizQuestionCount = await this.quizQuestionRepository
+          .createQueryBuilder('quizQuestion')
+          .innerJoin('quizQuestion.quiz', 'quiz') // Ensure 'quiz' alias is used for the join
+          .where('quiz.userId = :userId', { userId: user.id })
+          .getCount();
+
+        await this.usageTrackingService.setAbsoluteUsageCount(
+          user.id,
+          'quizQuestionsGenerated',
+          quizQuestionCount,
+        );
+        updatedCount++;
+        // console.log(`[SubscriptionService] Successfully recalculated usage for user ${user.id}. Flashcards: ${flashcardCount}, Quiz Questions: ${quizQuestionCount}`);
+      } catch (error) {
+        failedCount++;
+        console.error(`[SubscriptionService] Failed to recalculate usage for user ${user.id}:`, error);
+      }
+    }
+    console.log(`[SubscriptionService] Finished recalculation. Updated records for ${updatedCount} users. Failed for ${failedCount} users out of ${users.length}.`);
   }
 }

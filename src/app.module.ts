@@ -16,6 +16,7 @@ import { AiModule } from './modules/ai/ai.module';
 import { FoldersModule } from './modules/folders/folders.module';
 import { DecksModule } from './modules/decks/decks.module';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { AdminModule } from './modules/admin.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
     AiModule,
     DecksModule,
     SubscriptionModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],
