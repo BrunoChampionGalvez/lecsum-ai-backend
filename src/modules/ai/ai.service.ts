@@ -152,10 +152,10 @@ export class AiService implements OnModuleInit {
         config: {
           systemInstruction: `Generate a set of educational flashcards based on the content of files provided. If you find that the content is not enough to generate the number of flashcards requested, you should generate a smaller and reasonable number of flashcards that you can generate based on the amount of information you receive. Don't use any information from your general knowledge to generate flashcards. ONLY return the JSON array of flashcards. The things been evaluated in the flashcards must be as close as possible to the things university professors usually evaluate in their students, their purpose is to help students practice for university exams. Don't evaluate superficial or unimportant things (like irrelevant exact amounts or numbers, that are usually not important in the context of the student university formation), evaluate things that demand important knowledge and undestanding of the study material. For each flashcard, provide:
           \n
-          1. Type (${typesStr})
+          1. Type (qa or cloze)
           2. Front content
           3. Back content
-          4. Difficulty level (${difficulty})
+          4. Difficulty level (easy, moderate or hard)
           \n
           Return the result as a valid JSON array with the following structure:
           \n
@@ -171,7 +171,7 @@ export class AiService implements OnModuleInit {
           \n
           The flashcard type of 'qa' means that the flashcard is a question and answer flashcard. The flashcard type of 'cloze' means that the flashcard is a cloze flashcard (fill-in-the-blank). For the blanks of this last type of flashcard, use 4 low dashes: ____.
           \n
-          IMPORTANT: If the information you are using to generate the flashcards is in another language, other than english for example, use that same language to generate the flashcards.
+          IMPORTANT NOTE: If the information you are using to generate the flashcards is in another language, other than english for example, use that same language to generate the flashcards.
         `,
           temperature: 0.1,
           thinkingConfig: {
