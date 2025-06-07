@@ -79,7 +79,7 @@ export class FlashcardsController {
       deckName: string;
     },
     @Request() req: { user: UserPayload },
-  ): Promise<Flashcard[]> {
+  ): Promise<{ id: string }> {
     return this.flashcardsService.generateFlashcards(
       generateDto.courseId,
       req.user.id,

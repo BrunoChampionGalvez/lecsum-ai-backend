@@ -132,7 +132,7 @@ export class FlashcardsService {
       flashcardCount: number;
       deckName: string;
     },
-  ): Promise<Flashcard[]> {
+  ): Promise<{ id: string }> {
     if (!courseId || courseId === '') {
       throw new BadRequestException('A valid courseId must be provided');
     }
@@ -262,23 +262,44 @@ export class FlashcardsService {
       aiGenerated: true,
     }));
 
-    // Save the entities to the database
-    const savedFlashcards = await this.flashcardsRepository.save(flashcardData);
-
     const user = await this.usersService.findOne(userId);
 
-    const deckEntity = this.decksRepository.create({
+    // 1. Create and save the Deck first
+    const newDeck = this.decksRepository.create({
       name: params.deckName,
       courseId,
-      flashcards: savedFlashcards,
       aiGenerated: true,
       userId,
       user,
       fileIds: files.map((file) => file.id),
+      // flashcards will be linked after they are created with deckId
     });
-    await this.decksRepository.save(deckEntity);
+    const deckEntity = await this.decksRepository.save(newDeck);
 
-    return savedFlashcards;
+    // 2. Prepare the flashcard entities with the deckId
+    const flashcardDataWithDeckId = parsedFlashcards.map((fc: AIGeneratedFlashcard) => ({
+      type: fc.type,
+      front: fc.front,
+      back: fc.back,
+      difficulty: fc.difficulty,
+      courseId,
+      aiGenerated: true,
+      deckId: deckEntity.id, // Assign deckId
+    }));
+
+    // 3. Save the flashcard entities
+    const savedFlashcards = await this.flashcardsRepository.save(flashcardDataWithDeckId);
+
+    // 4. Optionally, update the deck with the saved flashcards if your relations require it
+    // This step might not be strictly necessary if the deckId on flashcards is sufficient
+    // and your Deck entity's 'flashcards' relation is primarily for reading.
+    // If you need to explicitly save the relation from the Deck side:
+    // deckEntity.flashcards = savedFlashcards;
+    // await this.decksRepository.save(deckEntity); 
+    // However, ensure this doesn't cause issues if flashcards already have deckId.
+
+    // 5. Return the deck ID
+    return { id: deckEntity.id };
   }
 
   async deleteFlashcard(id: string, userId: string): Promise<void> {

@@ -194,7 +194,7 @@ export class QuizzesService {
       questionCount: number;
       title: string;
     },
-  ): Promise<QuizQuestion[]> {
+  ): Promise<{ id: string }> {
     if (!courseId || courseId === '') {
       throw new BadRequestException('A valid courseId must be provided');
     }
@@ -317,36 +317,43 @@ export class QuizzesService {
       throw new BadRequestException('Failed to parse generated questions');
     }
 
-    // Prepare the flashcard entities from the parsed data
-    const questionData = parsedQuestions.map((q: AIGeneratedQuestionInput) => ({
-      question: q.question,
-      correctAnswer: q.correctAnswer,
-      options: q.options,
-      aiGenerated: true,
-    }));
-
-    // Save the entities to the database
-    const savedQuestions = await this.questionsRepository.save(
-      questionData as Partial<QuizQuestion>[],
-    );
-
     const user = await this.usersService.findOne(userId);
 
-    const quiz = this.quizzesRepository.create({
+    // 1. Create and save the Quiz first
+    const newQuiz = this.quizzesRepository.create({
       title: params.title,
       courseId,
-      questions: savedQuestions,
       aiGenerated: true,
-      questionCount: savedQuestions.length,
+      questionCount: 0, // Will be updated after questions are saved, or derived
       difficulty: params.difficulty,
       userId,
       user,
       fileIds: files.map((file) => file.id),
+      // questions will be linked after they are created with quizId
     });
+    const savedQuizEntity = await this.quizzesRepository.save(newQuiz);
 
-    await this.quizzesRepository.save(quiz);
+    // 2. Prepare the quiz question entities with the quizId
+    const questionDataWithQuizId = parsedQuestions.map((q: AIGeneratedQuestionInput) => ({
+      question: q.question,
+      correctAnswer: q.correctAnswer,
+      options: q.options,
+      aiGenerated: true,
+      quizId: savedQuizEntity.id, // Assign quizId
+    }));
 
-    return savedQuestions;
+    // 3. Save the quiz question entities
+    const savedQuestions = await this.questionsRepository.save(
+      questionDataWithQuizId as Partial<QuizQuestion>[],
+    );
+
+    // 4. Update the quiz with the actual question count and potentially the questions themselves
+    savedQuizEntity.questions = savedQuestions;
+    savedQuizEntity.questionCount = savedQuestions.length;
+    await this.quizzesRepository.save(savedQuizEntity);
+
+    // 5. Return the quiz ID
+    return { id: savedQuizEntity.id };
   }
 
   async submitQuizAnswers(

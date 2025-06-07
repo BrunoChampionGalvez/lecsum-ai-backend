@@ -116,7 +116,7 @@ export class QuizzesController {
       title: string;
     },
     @Request() req: { user: UserPayload },
-  ): Promise<QuizQuestion[]> {
+  ): Promise<{ id: string }> {
     return this.quizzesService.generateQuiz(generateDto.courseId, req.user.id, {
       fileIds: generateDto.fileIds,
       folderIds: generateDto.folderIds,
