@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, forwardRef, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -34,6 +34,7 @@ export class SubscriptionService {
     private readonly flashcardRepository: Repository<Flashcard>,
     @InjectRepository(QuizQuestion)
     private readonly quizQuestionRepository: Repository<QuizQuestion>,
+    @Inject(forwardRef(() => UsageTrackingService))
     private readonly usageTrackingService: UsageTrackingService,
   ) {
     // Initialize default plans if they don't exist

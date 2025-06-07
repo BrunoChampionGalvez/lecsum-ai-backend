@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, forwardRef, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SubscriptionUsage } from '../entities/subscription-usage.entity';
@@ -9,6 +9,7 @@ export class UsageTrackingService {
   constructor(
     @InjectRepository(SubscriptionUsage)
     private subscriptionUsageRepository: Repository<SubscriptionUsage>,
+    @Inject(forwardRef(() => SubscriptionService))
     private subscriptionService: SubscriptionService,
   ) {}
 
