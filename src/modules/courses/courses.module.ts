@@ -4,6 +4,7 @@ import { Course } from '../../entities/course.entity';
 import { CoursesService } from './courses.service';
 import { CoursesController } from './courses.controller';
 import { FoldersModule } from '../folders/folders.module';
+// import { FilesModule } from '../files/files.module';
 
 @Module({
   imports: [

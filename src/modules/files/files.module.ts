@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule } from '@nestjs/config';
@@ -41,7 +41,7 @@ import { AiModule } from '../ai/ai.module';
         }
       },
     }),
-    CoursesModule,
+    forwardRef(() => CoursesModule),
     AiModule,
     ConfigModule,
   ],

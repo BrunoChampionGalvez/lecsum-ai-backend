@@ -46,6 +46,7 @@ export class FilesService {
     const files = await this.filesRepository.find({
       where: { courseId },
       order: { createdAt: 'DESC' },
+      select: ['id', 'name', 'type', 'path', 'size', 'processed', 'createdAt', 'updatedAt', 'courseId', 'folderId', 'originalName'],
     });
 
     console.log(`Found ${files.length} files for course ${courseId}`);
@@ -73,6 +74,7 @@ export class FilesService {
     const files = await this.filesRepository.find({
       where: { folderId },
       order: { createdAt: 'DESC' },
+      select: ['id', 'name', 'type', 'path', 'size', 'processed', 'createdAt', 'updatedAt', 'courseId', 'folderId', 'originalName'],
     });
 
     console.log(

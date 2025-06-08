@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { Course } from '../../entities/course.entity';
 import { File } from 'src/entities/file.entity';
 import { FoldersService } from '../folders/folders.service';
+// import { FilesService } from '../files/files.service';
 
 @Injectable()
 export class CoursesService {
@@ -17,7 +18,7 @@ export class CoursesService {
     private coursesRepository: Repository<Course>,
     @Inject(forwardRef(() => FoldersService))
     private foldersService: FoldersService,
-  ) {}
+      ) {}
 
   async findAll(userId: string): Promise<Course[]> {
     return this.coursesRepository.find({
@@ -35,6 +36,7 @@ export class CoursesService {
     if (!course) {
       throw new NotFoundException(`Course with ID ${id} not found`);
     }
+
 
     return course;
   }
