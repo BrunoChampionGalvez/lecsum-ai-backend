@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { FoldersService } from './folders.service';
@@ -41,8 +42,10 @@ export class FoldersController {
   async getFolderContents(
     @Param('id') id: string,
     @Request() req: { user: UserPayload },
-  ): Promise<Folder[]> {
-    return this.foldersService.findFolderContents(id, req.user.id);
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ): Promise<{ folders: Folder[]; total: number }> {
+    return this.foldersService.findFolderContents(id, req.user.id, { page, limit });
   }
 
   @Get(':id')

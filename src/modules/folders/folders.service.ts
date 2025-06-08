@@ -51,14 +51,31 @@ export class FoldersService {
   async findFolderContents(
     folderId: string,
     userId: string,
-  ): Promise<Folder[]> {
+    options?: {
+      page?: number;
+      limit?: number;
+    }
+  ): Promise<{ folders: Folder[]; total: number }> {
     await this.findOne(folderId, userId);
-
-    // Get direct children of this folder
-    return this.foldersRepository.find({
+    
+    const page = options?.page || 1;
+    const limit = options?.limit || 20; // Default to 20 folders per page
+    const skip = (page - 1) * limit;
+    
+    // Count total subfolders first
+    const total = await this.foldersRepository.count({
+      where: { parentId: folderId }
+    });
+    
+    // Get direct children of this folder with pagination
+    const folders = await this.foldersRepository.find({
       where: { parentId: folderId },
       order: { createdAt: 'DESC' },
+      skip,
+      take: limit
     });
+    
+    return { folders, total };
   }
 
   async findOne(id: string, userId: string): Promise<Folder> {

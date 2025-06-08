@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -35,8 +36,10 @@ export class FilesController {
   async findAllByCourse(
     @Param('courseId') courseId: string,
     @Request() req: { user: UserPayload },
-  ): Promise<File[]> {
-    return this.filesService.findAllByCourse(courseId, req.user.id);
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ): Promise<{ files: File[]; total: number }> {
+    return this.filesService.findAllByCourse(courseId, req.user.id, { page, limit });
   }
 
   @Get('folder/:folderId')

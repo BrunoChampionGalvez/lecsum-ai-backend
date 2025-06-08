@@ -46,8 +46,10 @@ export class CoursesService {
     // Manually fetch file metadata using the optimized FilesService method, lazy-resolved
     if (course) { // Ensure course exists before trying to attach files
       const filesService = await this.moduleRef.get(FilesService, { strict: false });
-      const fileMetadata = await filesService.findAllByCourse(id, userId);
-      course.files = fileMetadata;
+      const paginatedFiles = await filesService.findAllByCourse(id, userId, { page: 1, limit: 50 });
+      course.files = paginatedFiles.files;
+      // Store total as metadata in course object without modifying the entity
+      (course as any)._fileMetadata = { total: paginatedFiles.total };
     }
 
     return course;

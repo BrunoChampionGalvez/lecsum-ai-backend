@@ -22,6 +22,10 @@ interface UserPayload {
 
 @Controller('subscription')
 export class SubscriptionController {
+  // Simple memory cache with TTL
+  private usageCache: Record<string, { data: any; timestamp: number }> = {};
+  private CACHE_TTL_MS = 10000; // 10 seconds
+
   constructor(
     private subscriptionService: SubscriptionService,
     private usageTrackingService: UsageTrackingService,
@@ -122,8 +126,15 @@ export class SubscriptionController {
   @Get('usage')
   @UseGuards(JwtAuthGuard)
   async getUsage(@Req() req: Request & { user: UserPayload }) {
+    const userId = req.user.id;
+    
+    // Check if we have a cached response for this user
+    const now = Date.now();
+    const cachedItem = this.usageCache[userId];
+    if (cachedItem && now - cachedItem.timestamp < this.CACHE_TTL_MS) {
+      return cachedItem.data;
+    }
     try {
-      const userId = req.user.id;
       const subscriptionDetails =
         await this.subscriptionService.getUserSubscriptionDetails(userId);
 
@@ -159,7 +170,7 @@ export class SubscriptionController {
         };
       }
 
-      return {
+      const result = {
         plan: subscriptionDetails.plan,
         limits: subscriptionDetails.limits,
         usage: subscriptionDetails.usage,
@@ -186,6 +197,14 @@ export class SubscriptionController {
           ),
         },
       };
+      
+      // Store the result in cache
+      this.usageCache[userId] = { 
+        data: result, 
+        timestamp: now 
+      };
+      
+      return result;
     } catch (error: unknown) {
       let errorMessage = 'Error fetching usage details';
       if (error instanceof Error) {

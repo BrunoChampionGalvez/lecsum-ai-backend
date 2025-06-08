@@ -40,20 +40,40 @@ export class FilesService {
     });
   }
 
-  async findAllByCourse(courseId: string, _userId: string): Promise<File[]> {
+  async findAllByCourse(
+    courseId: string, 
+    _userId: string, 
+    options?: {
+      page?: number;
+      limit?: number;
+    }
+  ): Promise<{ files: File[]; total: number }> {
     // First verify the course belongs to the user using the lightweight check method
     await (this.coursesService as any)._checkCourseAccess(courseId, _userId);
-
-    // Get ALL files in the course, regardless of folder
-    console.log(`Finding all files for course ${courseId}`);
+    
+    const page = options?.page || 1;
+    const limit = options?.limit || 50; // Default to 50 files per page
+    const skip = (page - 1) * limit;
+    
+    // Get files in the course with pagination
+    console.log(`Finding files for course ${courseId} (page: ${page}, limit: ${limit})`);
+    
+    // Get total count first (separate query to avoid loading all data)
+    const total = await this.filesRepository.count({
+      where: { courseId }
+    });
+    
+    // Then get the paginated results
     const files = await this.filesRepository.find({
       where: { courseId },
       order: { createdAt: 'DESC' },
       select: ['id', 'name', 'type', 'path', 'size', 'processed', 'createdAt', 'updatedAt', 'courseId', 'folderId', 'originalName'],
+      skip,
+      take: limit
     });
 
-    console.log(`Found ${files.length} files for course ${courseId}`);
-    return files;
+    console.log(`Found ${files.length} files of ${total} total for course ${courseId}`);
+    return { files, total };
   }
 
   async findAll(userId: string): Promise<File[]> {
