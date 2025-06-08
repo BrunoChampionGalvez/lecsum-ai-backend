@@ -4,21 +4,26 @@ import {
   forwardRef,
   Inject,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Course } from '../../entities/course.entity';
 import { File } from 'src/entities/file.entity';
+import { Folder } from '../../entities/folder.entity'; // Ensure Folder is imported
 import { FoldersService } from '../folders/folders.service';
-// import { FilesService } from '../files/files.service';
+import { FilesService } from '../files/files.service'; // Keep the import for type usage
 
 @Injectable()
 export class CoursesService {
   constructor(
     @InjectRepository(Course)
     private coursesRepository: Repository<Course>,
+    @InjectRepository(Folder)
+    private foldersRepository: Repository<Folder>,
+        private moduleRef: ModuleRef, // Inject ModuleRef
     @Inject(forwardRef(() => FoldersService))
     private foldersService: FoldersService,
-      ) {}
+  ) {} 
 
   async findAll(userId: string): Promise<Course[]> {
     return this.coursesRepository.find({
@@ -30,13 +35,20 @@ export class CoursesService {
   async findOne(id: string, userId: string): Promise<Course> {
     const course = await this.coursesRepository.findOne({
       where: { id, userId },
-      relations: ['files', 'quizzes', 'flashcards', 'folders'],
+      relations: ['quizzes', 'flashcards', 'folders'], // 'files' relation removed from initial load
     });
 
     if (!course) {
       throw new NotFoundException(`Course with ID ${id} not found`);
     }
 
+
+    // Manually fetch file metadata using the optimized FilesService method, lazy-resolved
+    if (course) { // Ensure course exists before trying to attach files
+      const filesService = await this.moduleRef.get(FilesService, { strict: false });
+      const fileMetadata = await filesService.findAllByCourse(id, userId);
+      course.files = fileMetadata;
+    }
 
     return course;
   }
@@ -66,7 +78,6 @@ export class CoursesService {
       );
       files = [...files, ...folderFiles];
     }
-
     return files.map((file) => {
       return {
         id: file.id,
@@ -120,5 +131,21 @@ export class CoursesService {
 
   async countUserCourses(userId: string): Promise<number> {
     return this.coursesRepository.count({ where: { userId } });
+  }
+
+  /**
+   * Private method to check if a course exists and belongs to the user.
+   * This method does NOT fetch relations or call other services to avoid circular dependencies.
+   */
+  private async _checkCourseAccess(id: string, userId: string): Promise<void> {
+    const courseExists = await this.coursesRepository.findOne({
+      where: { id, userId },
+      select: ['id'], // Only select 'id' for existence check
+    });
+    if (!courseExists) {
+      throw new NotFoundException(
+        `Course with ID ${id} not found or user does not have access.`,
+      );
+    }
   }
 }

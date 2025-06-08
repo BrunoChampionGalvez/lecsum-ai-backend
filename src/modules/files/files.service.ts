@@ -3,6 +3,8 @@ import {
   NotFoundException,
   BadRequestException,
   UnauthorizedException,
+  Inject, // Add Inject
+  forwardRef, // Add forwardRef
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
@@ -28,6 +30,7 @@ export class FilesService {
   constructor(
     @InjectRepository(File)
     private filesRepository: Repository<File>,
+    @Inject(forwardRef(() => CoursesService)) // Add decorator
     private coursesService: CoursesService,
     private aiService: AiService,
     private configService: ConfigService,
@@ -38,8 +41,8 @@ export class FilesService {
   }
 
   async findAllByCourse(courseId: string, _userId: string): Promise<File[]> {
-    // First verify the course belongs to the user
-    await this.coursesService.findOne(courseId, _userId);
+    // First verify the course belongs to the user using the lightweight check method
+    await (this.coursesService as any)._checkCourseAccess(courseId, _userId);
 
     // Get ALL files in the course, regardless of folder
     console.log(`Finding all files for course ${courseId}`);
@@ -63,6 +66,7 @@ export class FilesService {
       where: { courseId: In(courseIds) },
       relations: ['course'],
       order: { createdAt: 'DESC' },
+      select: ['id', 'name', 'type', 'path', 'size', 'processed', 'createdAt', 'updatedAt', 'courseId', 'folderId', 'originalName'], // Added select for metadata only
     });
   }
 
@@ -83,10 +87,12 @@ export class FilesService {
     return files;
   }
 
-  async findOne(id: string, userId: string): Promise<File> {
+  async findOne(id: string, userId: string, includeContent: boolean = false): Promise<File> {
     // First get the file
+    const selectOptions: (keyof File)[] = ['id', 'name', 'type', 'path', 'size', 'processed', 'createdAt', 'updatedAt', 'courseId', 'folderId', 'originalName'];
     const file = await this.filesRepository.findOne({
       where: { id },
+      select: includeContent ? undefined : selectOptions,
     });
 
     if (!file) {
@@ -103,13 +109,15 @@ export class FilesService {
    * Find a file by its ID
    * In our entity, the primary key 'id' is a UUID
    */
-  async findOneById(id: string, userId: string): Promise<File> {
+  async findOneById(id: string, userId: string, includeContent: boolean = false): Promise<File> {
     console.log(`Finding file with ID: ${id}`);
     try {
       // First try to find by ID directly (which is the primary UUID field)
+      const selectOptions: (keyof File)[] = ['id', 'name', 'type', 'path', 'size', 'processed', 'createdAt', 'updatedAt', 'courseId', 'folderId', 'originalName'];
       const file = await this.filesRepository.findOne({
         where: { id },
         relations: ['course'],
+        select: includeContent ? undefined : selectOptions,
       });
 
       if (file) {
