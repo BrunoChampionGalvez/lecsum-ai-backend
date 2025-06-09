@@ -9,6 +9,7 @@ import {
 import { Observable } from 'rxjs';
 import { UsageTrackingService } from '../services/usage-tracking.service';
 import { Request } from 'express';
+import { isPublicPath } from '../common/helpers/auth-exclusions.helper';
 
 interface UserPayload {
   id: string;
@@ -31,6 +32,11 @@ export class ChatMessageUsageInterceptor implements NestInterceptor {
       .getRequest<
         Request & { user?: UserPayload; body: ChatMessageRequestBody }
       >();
+
+    // Skip authentication check for public paths like auth/register
+    if (isPublicPath(request.path)) {
+      return next.handle();
+    }
 
     // Ensure user exists and has an ID
     if (!request.user || !request.user.id) {

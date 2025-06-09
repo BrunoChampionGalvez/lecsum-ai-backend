@@ -150,7 +150,52 @@ export class AiService implements OnModuleInit {
         model: this.geminiModels.flashPreview,
         contents: prompt,
         config: {
-          systemInstruction: `Generate a set of educational flashcards based on the content of files provided. If you find that the content is not enough to generate the number of flashcards requested, you should generate a smaller and reasonable number of flashcards that you can generate based on the amount of information you receive. Don't use any information from your general knowledge to generate flashcards. ONLY return the JSON array of flashcards. The things been evaluated in the flashcards must be as close as possible to the things university professors usually evaluate in their students, their purpose is to help students practice for university exams. Don't evaluate superficial or unimportant things (like irrelevant exact amounts or numbers, that are usually not important in the context of the student university formation), evaluate things that demand important knowledge and undestanding of the study material. For each flashcard, provide:
+          systemInstruction: `Generate a set of educational flashcards based on the content of files provided. If you find that the content is not enough to generate the number of flashcards requested, you should generate a smaller and reasonable number of flashcards that you can generate based on the amount of information you receive. Don't use any information from your general knowledge to generate flashcards. ONLY return the JSON array of flashcards. The things been evaluated in the flashcards must be as close as possible to the things university professors usually evaluate in their students, their purpose is to help students practice for university exams. Don't evaluate superficial or unimportant things (like irrelevant exact amounts or numbers, that are usually not important in the context of the student university formation), evaluate things that demand important knowledge and undestanding of the study material. 
+          \n
+          These are the definitions of the difficulty levels so that you can formulate the content of the flashcards more accurately:
+          1. Easy:
+          
+          - Scope & Depth
+          
+          Covers core facts and concepts at a basic level—think key terms, straightforward definitions, simple associations.
+
+          - Flashcard Style
+
+          Mostly recognition or very short-answer recall (e.g., “What is X?”).
+
+          - Cognitive Load
+
+          Low: the user should have high confidence of success, but still engage retrieval practice rather than pure review.
+
+          2. Moderate:
+
+          - Scope & Depth
+
+          Digs into relationships between ideas or multi-step processes; may require the user to connect two or three concepts.
+
+          - Flashcard Style
+
+          Short-answer and fill-in-the-blank that prompt the user to produce answers rather than recognize them (e.g., “How does X lead to Y?”, “Fill in the missing step in this process”).
+
+          - Cognitive Load
+
+          Medium: requires active recall of more complex structures or explanations, reinforcing deeper understanding and memory consolidation.
+
+          3. Hard:
+
+          - Scope & Depth
+
+          Tackles higher-level reasoning: abstractions, edge-case applications, problem solving, or multi-concept synthesis.
+
+          - Flashcard Style
+
+          Open-ended, scenario-based, or multi-part problems (e.g., “Given scenario A, predict outcome B and justify,” “Compare and contrast X vs. Y in context Z”).
+
+          - Cognitive Load
+
+          High: pushes learners to apply knowledge in novel contexts and practice deeper learning strategies (analysis, evaluation, synthesis).
+          \n
+          For each flashcard, provide:
           \n
           1. Type (qa or cloze)
           2. Front content
@@ -262,7 +307,52 @@ export class AiService implements OnModuleInit {
         model: this.geminiModels.flashPreview,
         contents: prompt,
         config: {
-          systemInstruction: `Generate a set of educational quiz questions based on the content of files provided. If you find that the content is not enough to generate the number of questions requested, you should generate a smaller and reasonable number of questions that you can generate based on the amount of information you receive. Don't use any information from your general knowledge to generate questions. ONLY return the JSON array of questions. The things been evaluated in the questions must be as close as possible to the things university professors usually evaluate in their students, their purpose is to help students practice for university exams. Don't evaluate superficial or unimportant things (like irrelevant exact amounts or numbers, that are usually not important in the context of the student university formation), evaluate things that demand important knowledge and undestanding of the study material. For each question, provide:
+          systemInstruction: `Generate a set of educational quiz questions based on the content of files provided. If you find that the content is not enough to generate the number of questions requested, you should generate a smaller and reasonable number of questions that you can generate based on the amount of information you receive. Don't use any information from your general knowledge to generate questions. ONLY return the JSON array of questions. The things been evaluated in the questions must be as close as possible to the things university professors usually evaluate in their students, their purpose is to help students practice for university exams. Don't evaluate superficial or unimportant things (like irrelevant exact amounts or numbers, that are usually not important in the context of the student university formation), evaluate things that demand important knowledge and undestanding of the study material. 
+          \n
+          These are the definitions of the difficulty levels so that you can formulate the content of the flashcards more accurately:
+          1. Easy:
+          
+          - Scope & Depth
+          
+          Covers core facts and concepts at a basic level—think key terms, straightforward definitions, simple associations.
+
+          - Question Style
+
+          Mostly recognition or very short-answer recall (e.g., “What is X?”).
+
+          - Cognitive Load
+
+          Low: the user should have high confidence of success, but still engage retrieval practice rather than pure review.
+
+          2. Moderate:
+
+          - Scope & Depth
+
+          Digs into relationships between ideas or multi-step processes; may require the user to connect two or three concepts.
+
+          - Question Style
+
+          Short-answer and fill-in-the-blank that prompt the user to produce answers rather than recognize them (e.g., “How does X lead to Y?”, “Fill in the missing step in this process”).
+
+          - Cognitive Load
+
+          Medium: requires active recall of more complex structures or explanations, reinforcing deeper understanding and memory consolidation.
+
+          3. Hard:
+
+          - Scope & Depth
+
+          Tackles higher-level reasoning: abstractions, edge-case applications, problem solving, or multi-concept synthesis.
+
+          - Question Style
+
+          Open-ended, scenario-based, or multi-part problems (e.g., “Given scenario A, predict outcome B and justify,” “Compare and contrast X vs. Y in context Z”).
+
+          - Cognitive Load
+
+          High: pushes learners to apply knowledge in novel contexts and practice deeper learning strategies (analysis, evaluation, synthesis).
+          \n
+          For each question, provide:
           \n
           1. The question text
           2. 4 answer options

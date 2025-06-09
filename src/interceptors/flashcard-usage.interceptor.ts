@@ -10,6 +10,7 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { UsageTrackingService } from '../services/usage-tracking.service';
 import { Request } from 'express';
+import { isPublicPath } from '../common/helpers/auth-exclusions.helper';
 
 interface UserPayload {
   id: string;
@@ -40,6 +41,11 @@ export class FlashcardUsageInterceptor implements NestInterceptor {
     const request = context
       .switchToHttp()
       .getRequest<Request & { user?: UserPayload }>();
+
+    // Skip authentication check for public paths like auth/register
+    if (isPublicPath(request.path)) {
+      return next.handle();
+    }
 
     // Ensure user exists and has an ID
     if (!request.user || !request.user.id) {

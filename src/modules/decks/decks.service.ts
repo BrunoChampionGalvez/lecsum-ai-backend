@@ -24,9 +24,9 @@ export class DecksService {
     const courses = await this.coursesService.findAll(userId);
     const courseIds = courses.map((course) => course.id);
 
-    // Get all decks across all of the user's courses
+    // Get all decks across all of the user's courses AND ensure they belong to this user
     return this.decksRepository.find({
-      where: { courseId: In(courseIds) },
+      where: { courseId: In(courseIds), userId },
       relations: ['course'],
       order: { id: 'DESC' }, // Sort by ID as a fallback if createdAt is not available
     });

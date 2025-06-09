@@ -3,8 +3,8 @@ import {
   NotFoundException,
   BadRequestException,
   UnauthorizedException,
-  Inject, // Add Inject
-  forwardRef, // Add forwardRef
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
@@ -19,8 +19,8 @@ import { AiService } from '../ai/ai.service';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { ConfigService } from '@nestjs/config';
 
+// Keep readFileAsync for backward compatibility with existing code
 const readFileAsync = promisify(fs.readFile);
-const unlinkAsync = promisify(fs.unlink);
 const pdfExtract = new PDFExtract();
 
 @Injectable()
@@ -121,6 +121,18 @@ export class FilesService {
 
     // Then verify the course belongs to the user
     await this.coursesService.findOne(file.courseId, userId);
+
+    return file;
+  }
+
+  async findOneForFlashcardsOrQuizzes(id: string): Promise<File> {
+    const file = await this.filesRepository.findOne({
+      where: { id },
+    });
+
+    if (!file) {
+      throw new NotFoundException(`File with ID ${id} not found`);
+    }
 
     return file;
   }
@@ -334,8 +346,6 @@ export class FilesService {
     // Check if total course size would exceed 100MB
     const totalSize = await this.getTotalCourseFileSize(courseId);
     if (totalSize + fileData.size > 100 * 1024 * 1024) {
-      // Delete uploaded file to avoid keeping unnecessary files
-      await unlinkAsync(fileData.path);
       throw new BadRequestException('Course size limit of 100MB exceeded');
     }
 
@@ -367,13 +377,16 @@ export class FilesService {
       extractedContent,
       fileData.originalname,
     );
+    
+    // Create a virtual path (since we're not storing the file on disk)
+    const virtualPath = `memory://${fileData.originalname}`;
 
     // Create file entity
     const file = this.filesRepository.create({
       name: fileName,
       originalName: fileData.originalname,
       type,
-      path: fileData.path,
+      path: virtualPath, // Store a virtual path instead of a physical file path
       size: fileData.size,
       content: extractedContent,
       summary,
@@ -469,12 +482,9 @@ export class FilesService {
 
   async deleteFile(id: string, userId: string): Promise<void> {
     const file = await this.findOne(id, userId);
-
-    // Only delete physical file if it's stored on disk (not plain text)
-    if (file.type !== FileType.TEXT && fs.existsSync(file.path)) {
-      await unlinkAsync(file.path);
-    }
-
+    
+    // No physical files to delete since we're storing everything in memory
+    // and database, so just delete the database record
     await this.filesRepository.remove(file);
   }
 
@@ -686,7 +696,11 @@ export class FilesService {
         case FileType.PDF:
           // Extract text from PDF using pdf.js-extract
           try {
-            const data = await pdfExtract.extract(file.path, {});
+            // Create a temporary buffer for PDF extraction
+            const buffer = file.buffer;
+            
+            // Use arraybuffer with pdf.js-extract
+            const data = await pdfExtract.extractBuffer(buffer, {});
             if (!data || !data.pages) {
               throw new Error('Failed to extract PDF content');
             }
@@ -718,7 +732,7 @@ export class FilesService {
         case FileType.DOCX:
           // Extract text from DOCX using mammoth.js
           try {
-            const buffer = await readFileAsync(file.path);
+            const buffer = file.buffer;
             const result = await mammoth.extractRawText({ buffer });
             return result.value || 'No text content found in DOCX';
           } catch (docxError: unknown) {
@@ -740,8 +754,8 @@ export class FilesService {
           }
 
         case FileType.TEXT:
-          // For text files, just read the content
-          return await readFileAsync(file.path, 'utf8');
+          // For text files, convert buffer to string
+          return Buffer.from(file.buffer).toString('utf8');
 
         default:
           throw new BadRequestException('Unsupported file type');

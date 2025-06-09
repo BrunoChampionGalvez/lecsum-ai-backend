@@ -10,8 +10,11 @@ export class DeckService {
     private deckRepository: Repository<Deck>,
   ) {}
 
-  async findAll(): Promise<Deck[]> {
-    return this.deckRepository.find({ relations: ['course', 'flashcards'] });
+  async findAll(userId: string): Promise<Deck[]> {
+    return this.deckRepository.find({
+      where: { userId },
+      relations: ['course', 'flashcards']
+    });
   }
 
   async findOne(id: string): Promise<Deck> {

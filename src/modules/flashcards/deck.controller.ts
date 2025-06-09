@@ -28,8 +28,8 @@ export class DeckController {
   ) {}
 
   @Get()
-  async findAll(): Promise<Deck[]> {
-    return this.deckService.findAll();
+  async findAll(@Request() req: { user: UserPayload }): Promise<Deck[]> {
+    return this.deckService.findAll(req.user.id);
   }
 
   @Get(':id')

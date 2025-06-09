@@ -154,9 +154,9 @@ export class QuizzesService {
     const courses = await this.coursesService.findAll(userId);
     const courseIds = courses.map((course) => course.id);
 
-    // Get all quizzes across all of the user's courses
+    // Get all quizzes across all of the user's courses AND ensure they belong to this user
     return this.quizzesRepository.find({
-      where: { courseId: In(courseIds) },
+      where: { courseId: In(courseIds), userId },
       relations: ['course'],
       order: { createdAt: 'DESC' },
     });
@@ -263,7 +263,7 @@ export class QuizzesService {
       params.fileIds && params.fileIds.length > 0
         ? await Promise.all(
             params.fileIds.map((fileId) =>
-              this.filesService.findOne(fileId, userId),
+              this.filesService.findOneForFlashcardsOrQuizzes(fileId),
             ),
           )
         : [];
