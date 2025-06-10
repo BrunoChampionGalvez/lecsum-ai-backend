@@ -664,7 +664,9 @@ export class AiService implements OnModuleInit {
       }
       [/REF]
 
-      IMPORTANT: If the user talks to you in another language, respond in the same language. But you must always make the references in the same language as the original source (file, flashcard deck, quiz, etc.)
+      It is extremely important that everytime you respond using references, you open and also close the reference tags ([REF] and [/REF]) for each reference.
+
+      Note: If the user talks to you in another language, respond in the same language. But you must always make the references in the same language as the original source (file, flashcard deck, quiz, etc.)
     `;
 
     return prompt;
