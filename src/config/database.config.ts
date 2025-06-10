@@ -11,6 +11,6 @@ export const databaseConfig: TypeOrmModuleOptions = {
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-  synchronize: process.env.ENVIRONMENT !== 'production', // Set to false in production
+  synchronize: true, // Set to false in production
   dropSchema: false,
 };
