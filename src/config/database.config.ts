@@ -12,5 +12,5 @@ export const databaseConfig: TypeOrmModuleOptions = {
   database: process.env.DATABASE_NAME,
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   synchronize: process.env.ENVIRONMENT !== 'production', // Set to false in production
-  dropSchema: true,
+  dropSchema: false,
 };
