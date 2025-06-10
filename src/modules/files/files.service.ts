@@ -125,7 +125,7 @@ export class FilesService {
     return file;
   }
 
-  async findOneForFlashcardsOrQuizzes(id: string): Promise<File> {
+  async findOneForChatFlashcardsOrQuizzes(id: string): Promise<File> {
     const file = await this.filesRepository.findOne({
       where: { id },
     });

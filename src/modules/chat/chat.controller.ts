@@ -56,14 +56,10 @@ export class ChatController {
 
   @Post('sessions')
   async createSession(
-    @Body() createDto: { fileIds?: string[]; name?: string },
+    @Body() createDto: { fileIds?: string[] },
     @Request() req: { user: AuthenticatedUserContext },
   ): Promise<ChatSession> {
-    return this.chatService.createSession(
-      req.user.id,
-      createDto.fileIds,
-      createDto.name,
-    );
+    return this.chatService.createSession(req.user.id, createDto.fileIds);
   }
 
   @Patch('sessions/:id')

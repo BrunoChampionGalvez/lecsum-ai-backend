@@ -151,7 +151,8 @@ export class ChatService {
 
     // Create a new chat session with provided name or a default one
     const session = this.chatSessionsRepository.create({
-      name: name || (await this.generateSessionName(fileIds, userId)),
+      name: 'New Chat',
+      nameWasAiGenerated: false,
       contextFileIds: fileIds,
       userId,
     });
@@ -239,6 +240,12 @@ export class ChatService {
         throw new Error(
           `Session with ID ${sessionId} not found or does not belong to user ${userId}`,
         );
+      }
+
+      if (session.nameWasAiGenerated === false) {
+        session.name = await this.aiService.generateSessionName(content);
+        session.nameWasAiGenerated = true;
+        await this.chatSessionsRepository.save(session);
       }
 
       console.log(
@@ -333,7 +340,7 @@ export class ChatService {
     ) {
       const files = await Promise.all(
         sessionContext.contextFileIds.map((fileId) =>
-          this.filesService.findOne(fileId, userId),
+          this.filesService.findOneForChatFlashcardsOrQuizzes(fileId),
         ),
       );
 
@@ -349,7 +356,9 @@ export class ChatService {
     if (flashCardDecksContents.some((deck) => deck.fileIds.length > 0)) {
       // Flatten the nested array of promises before awaiting
       const filePromises = flashCardDecksContents.flatMap((deck) =>
-        deck.fileIds.map((fileId) => this.filesService.findOne(fileId, userId)),
+        deck.fileIds.map((fileId) =>
+          this.filesService.findOneForChatFlashcardsOrQuizzes(fileId),
+        ),
       );
 
       // Now await the flattened array of promises
@@ -372,7 +381,9 @@ export class ChatService {
 
     if (quizzesContents.some((quiz) => quiz.fileIds.length > 0)) {
       const filePromises = quizzesContents.flatMap((quiz) =>
-        quiz.fileIds.map((fileId) => this.filesService.findOne(fileId, userId)),
+        quiz.fileIds.map((fileId) =>
+          this.filesService.findOneForChatFlashcardsOrQuizzes(fileId),
+        ),
       );
 
       const files = await Promise.all(filePromises);

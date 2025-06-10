@@ -263,7 +263,7 @@ export class QuizzesService {
       params.fileIds && params.fileIds.length > 0
         ? await Promise.all(
             params.fileIds.map((fileId) =>
-              this.filesService.findOneForFlashcardsOrQuizzes(fileId),
+              this.filesService.findOneForChatFlashcardsOrQuizzes(fileId),
             ),
           )
         : [];

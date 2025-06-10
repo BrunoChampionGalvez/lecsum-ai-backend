@@ -18,6 +18,9 @@ export class ChatSession {
   @Column()
   name: string;
 
+  @Column()
+  nameWasAiGenerated: boolean;
+
   @Column({ type: 'jsonb', nullable: true })
   contextFileIds: string[];
 
