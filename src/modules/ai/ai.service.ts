@@ -216,7 +216,9 @@ export class AiService implements OnModuleInit {
           \n
           The flashcard type of 'qa' means that the flashcard is a question and answer flashcard. The flashcard type of 'cloze' means that the flashcard is a cloze flashcard (fill-in-the-blank). For the blanks of this last type of flashcard, use 4 low dashes: ____.
           \n
-          IMPORTANT NOTE: If the information you are using to generate the flashcards is in another language, other than english for example, use that same language to generate the flashcards.
+          IMPORTANT NOTE 1: Never make flashcards that require the user to know unnecessarily precise numbers or amounts. For example: the hazard ratio, average values, the p-value, the confidence interval, etc.
+          \n
+          IMPORTANT NOTE 2: If the information you are using to generate the flashcards is in another language, other than english for example, use that same language to generate the flashcards.
         `,
           temperature: 0.1,
           thinkingConfig: {
@@ -373,7 +375,9 @@ export class AiService implements OnModuleInit {
             // more questions...
           ]
           \n
-          IMPORTANT: If the information you are using to generate the questions is in another language, other than english for example, use that same language to generate the questions.
+          IMPORTANT NOTE 1: Never make questions that require the user to know unnecessarily precise numbers or amounts. For example: the hazard ratio, average values, the p-value, the confidence interval, etc.
+          \n
+          IMPORTANT NOTE 2: If the information you are using to generate the questions is in another language, other than english for example, use that same language to generate the questions.
           `,
           temperature: 0.1,
           thinkingConfig: {
