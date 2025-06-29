@@ -22,6 +22,9 @@ export class Deck {
 
   @OneToMany(() => Flashcard, (flashcard) => flashcard.deck)
   flashcards: Flashcard[];
+  
+  @Column({ type: 'int', nullable: true })
+  lastScore: number;
 
   @Column()
   courseId: string;

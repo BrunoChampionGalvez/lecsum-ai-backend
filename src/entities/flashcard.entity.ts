@@ -20,6 +20,12 @@ export enum DifficultyLevel {
   HARD = 'hard',
 }
 
+export enum FlashcardAnswer {
+  CORRECT = 'correct',
+  INCORRECT = 'incorrect',
+  NONE = 'none',
+}
+
 @Entity('flashcards')
 export class Flashcard {
   @PrimaryGeneratedColumn('uuid')
@@ -64,4 +70,7 @@ export class Flashcard {
 
   @ManyToOne(() => Course, (course) => course.flashcards)
   course: Course;
+
+  @Column({ nullable: true, type: 'enum', enum: FlashcardAnswer })
+  answer: FlashcardAnswer;
 }

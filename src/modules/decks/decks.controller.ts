@@ -62,4 +62,12 @@ export class DecksController {
   async remove(@Param('id') id: string): Promise<void> {
     return this.decksService.remove(id);
   }
+
+  @Post(':id/submit')
+  async submitDeckAnswers(
+    @Param('id') id: string,
+    @Body() answers: { answers: { flashcardId: string; answer: 'correct' | 'incorrect' }[] },
+  ): Promise<Deck> {
+    return this.decksService.submitDeckAnswers(id, answers.answers);
+  }
 }

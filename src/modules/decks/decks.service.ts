@@ -35,6 +35,7 @@ export class DecksService {
   async findOne(id: string): Promise<Deck> {
     const deck = await this.decksRepository.findOne({
       where: { id },
+      relations: ['flashcards'],
     });
 
     if (!deck) {
@@ -116,5 +117,29 @@ export class DecksService {
     }
 
     return result;
+  }
+
+  async submitDeckAnswers(
+    deckId: string,
+    answers: { flashcardId: string; answer: 'correct' | 'incorrect' }[],
+  ): Promise<Deck> {
+    const deck = await this.findOne(deckId);
+    if (!deck) {
+      throw new NotFoundException(`Deck with ID ${deckId} not found`);
+    }
+
+    // Here you would typically process the answers, e.g., save results, calculate scores, etc.
+    // For now, we'll just return the deck as is.
+    
+    // Example of processing answers (this can be customized):
+    const correctAnswers = answers.filter(
+      (a) => {
+        const flashcard = deck.flashcards.find(f => f.id === a.flashcardId);
+        return flashcard && 'correct' === a.answer;
+      }, // Replace with actual logic
+    ).length;
+
+    deck.lastScore = correctAnswers; // Example score calculation
+    return this.decksRepository.save(deck);
   }
 }
