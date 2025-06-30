@@ -18,6 +18,7 @@ import * as mammoth from 'mammoth';
 import { AiService } from '../ai/ai.service';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { ConfigService } from '@nestjs/config';
+import axios, { Axios } from 'axios';
 
 // Keep readFileAsync for backward compatibility with existing code
 const readFileAsync = promisify(fs.readFile);
@@ -378,8 +379,27 @@ export class FilesService {
       fileData.originalname,
     );
     
-    // Create a virtual path (since we're not storing the file on disk)
-    const virtualPath = `memory://${fileData.originalname}`;
+    // Store the file on disk and create a physical path
+    const uploadsDir = this.configService.get('UPLOADS_DIR') || 'uploads';
+    // Ensure the uploads directory exists
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    const filePath = `${uploadsDir}/${Date.now()}_${fileData.originalname}`;
+    fs.writeFileSync(filePath, fileData.buffer);
+    const virtualPath = filePath;
+
+    // Upload the file to Google Cloud Storage
+    await axios.post(
+      `https://storage.googleapis.com/upload/storage/v1/b/${this.configService.get('GCS_BUCKET_NAME')}/o?uploadType=media&name=${encodeURIComponent(virtualPath)}`,
+      fileData.buffer, // send the binary data directly
+      {
+      headers: {
+        'Authorization': `Bearer ${this.configService.get('GCS_ACCESS_TOKEN')}`,
+        'Content-Type': fileData.mimetype,
+      },
+      },
+    );
 
     // Create file entity
     const file = this.filesRepository.create({
@@ -839,5 +859,30 @@ export class FilesService {
     }
 
     return chunks;
+  }
+
+  /**
+   * Save extracted text from PDF.js Express
+   * @param id The ID of the research paper
+   * @param userId The user ID for permission checking
+   * @param textByPages The extracted text organized by page numbers
+   * @returns The updated research paper entity
+   */
+  async saveExtractedText(id: string, userId: string, textByPages: Record<string, string>): Promise<File> {
+    // Get the research paper and verify ownership
+    const paper = await this.findOne(id, userId);
+    
+    if (!paper) {
+      throw new NotFoundException(`Research paper with ID ${id} not found`);
+    }
+
+    // Update the paper with extracted text and mark as extracted
+    let updatedPaper = await this.filesRepository.save({
+      ...paper,
+      textByPages,
+      textExtracted: true
+    });
+
+    return updatedPaper;
   }
 }

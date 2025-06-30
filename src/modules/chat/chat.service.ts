@@ -816,9 +816,7 @@ export class ChatService {
         case 'quiz':
           return await this.getQuizPath(referenceId, userId);
         case 'flashcardDeck':
-          throw new BadRequestException(
-            `Could not retrieve path for ${referenceType} ${referenceId}`,
-          );
+          return await this.getDeckPath(referenceId, userId);
         default:
           throw new BadRequestException(
             `Invalid reference type: ${referenceType}`,

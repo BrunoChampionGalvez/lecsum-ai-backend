@@ -32,6 +32,12 @@ export class File {
   @Column({ type: 'int', default: 0 })
   size: number;
 
+  @Column({ type: 'jsonb', nullable: true })
+  textByPages: Record<string, string>;
+
+  @Column({ type: 'boolean', default: false })
+  textExtracted: boolean;
+
   @Column({ type: 'text', nullable: true })
   content: string;
 

@@ -57,7 +57,7 @@ export class FilesController {
     @Param('id') id: string,
     @Request() req: { user: UserPayload },
   ): Promise<File> {
-    return this.filesService.findOne(id, req.user.id);
+    return this.filesService.findOneForChatFlashcardsOrQuizzes(id);
   }
 
   @Get('id/:id')
@@ -338,6 +338,32 @@ export class FilesController {
       body.content,
       folderId,
     );
+  }
+
+  /**
+   * Save extracted text from PDF.js Express
+   */
+  @Post(':id/save-text')
+  async saveExtractedText(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() textData: { textByPages: Record<string, string> }
+  ) {
+    try {
+      const result = await this.filesService.saveExtractedText(
+        id,
+        req.user.userId,
+        textData.textByPages
+      );
+      
+      return {
+        success: true,
+        paperUpdated: result.id,
+        pageCount: Object.keys(textData.textByPages).length
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Delete(':id')
