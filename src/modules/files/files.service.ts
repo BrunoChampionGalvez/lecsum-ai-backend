@@ -458,9 +458,17 @@ export class FilesService {
 
   async deleteFile(id: string, userId: string): Promise<void> {
     const file = await this.findOne(id, userId);
+
+    if (!file) {
+      throw new NotFoundException(`File with ID ${id} not found`);
+    }
     
-    // No physical files to delete since we're storing everything in memory
-    // and database, so just delete the database record
+    const index = this.pc.index(this.configService.get('PINECONE_INDEX_NAME') as string, this.configService.get('PINECONE_INDEX_HOST') as string);
+    const ns = index.namespace(userId)
+
+    await ns.deleteMany({
+      fileId: { $eq: file.id  },
+    });
     await this.filesRepository.remove(file);
   }
 
@@ -863,10 +871,11 @@ export class FilesService {
 
     await namespace.upsertRecords(
       chunks.map((chunk, index) => ({
-      _id: `${id}-${index}`,
-      chunk_text: chunk.replace(/\n/g, ''),
-      fileId: id,
-      name: fileName,
+        _id: `${id}-${index}`,
+        chunk_text: chunk.replace(/\n/g, ''),
+        fileId: id,
+        name: fileName,
+        userId: userId, // Include userId for better context
       })),
     );
 

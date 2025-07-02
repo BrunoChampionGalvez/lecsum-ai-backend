@@ -720,7 +720,7 @@ export class AiService implements OnModuleInit {
         topK: topK,
         inputs: { text: query },
       },
-      fields: ['chunk_text', 'fileId', 'name'],
+      fields: ['chunk_text', 'fileId', 'name', 'userId'],
       /*...(lessThan250Words
         ? {
             rerank: {
