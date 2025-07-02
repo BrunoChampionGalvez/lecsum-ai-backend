@@ -482,7 +482,10 @@ export class ChatService {
                 .name,
               content: (result.fields as { name: string; chunk_text: string })
                 .chunk_text,
-            })),
+              userId: (result.fields as { userId: string }).userId,
+            })).filter((result) => {
+              return result.userId === userId;
+            }),
           ];
 
           fileContents = [];
