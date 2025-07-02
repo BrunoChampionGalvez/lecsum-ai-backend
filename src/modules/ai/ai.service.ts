@@ -531,7 +531,7 @@ export class AiService implements OnModuleInit {
         `🏁 AI Service: Finished streaming. Total chunks: ${chunkCount}, Total text: ${totalYielded.length} chars`,
       );
       console.log(
-        `📄 AI Service: Final complete text preview: "${totalYielded.substring(0, 200)}..."`,
+        `📄 AI Service: Final complete text preview: "${totalYielded}"`,
       );
     } catch (error: unknown) {
       const consolePrefix = '❌ AI Service: Error in generateChatResponse';
@@ -563,7 +563,7 @@ export class AiService implements OnModuleInit {
     }
   }
 
-  async generateSummary(fileContent: string): Promise<string> {
+  async generateSummary(fileContent: string | null): Promise<string> {
     try {
       // Prepare the prompt for generating a summary
       const prompt = `
@@ -670,7 +670,21 @@ export class AiService implements OnModuleInit {
 
       It is extremely important that everytime you respond using references, you open and also close the reference tags ([REF] and [/REF]) for each reference.
 
-      Note: If the user talks to you in another language, respond in the same language. But you must always make the references in the same language as the original source (file, flashcard deck, quiz, etc.)
+      If the user talks to you in another language, respond in the same language. But you must always make the references in the same language as the original source (file, flashcard deck, quiz, etc.)
+
+      IMPORTANT CONSIDERATIONS: 
+
+      1. Every time you are going to reference a text from a file, you must verify first if the text is split across two pages. If it is, you must only provide the most significant part that answers the user's query. To detect if the text is split across two pages, look for the [START_PAGE] and [END_PAGE] markers. If those markers are in the middle of the text you want to reference, it means the text is split across two pages. Don't include the markers [START_PAGE] and [END_PAGE] in the reference.
+      
+      2. Sometimes, the text of the files are going to have the text of tables or graphs (from the original pdf from which the json file was extracted). This text can be at the start or end of a page, or even in the middle of it. When referencing a text from a file, you must not include the text of tables or graphs in the references. Before including a text in the references, you must verify that it does not contain information from tables or graphs. And if it does, remove it, without removing the gramatical consistency of the text.
+      
+      3. In the text of the references, you must always include all the characters that are part of the text that you are planning on referencing. This includes parenthesis (the '(' and ')' characters), square brackets (the '[' and ']' characters), percentage signs (the '%' character), commas (the ',' character), periods (the '.' character), colons (the ':' character), semicolons (the ';' character), exclamation points (the '!' character), question marks (the '?' character), quotation marks (the '"' character), standard spaces between words (the ' ' character), and any other characters that are part of the text that you are planning on referencing, even if it doesn't make much sense.
+      
+      4. In the text of the references, don't include the subtitles of the sections of the paper. For example: Introduction, Methods, Results, Discussion, Conclusion, etc. You can distinguish these subtitles by the fact that they are words that are isolated, in the sense that they are not a part of a sentence.
+      
+      5. At the start or end of the pages, you may find text from the headers or footers of the file. You must not include this text in the references. This text normally can contain DOI numbers, URLs, Scientific Journal names, Author names, page numbers, and other metadata from the original file. When referencing text, always verify that the text you are referencing does not contain any of this information. To do this, you must check the start or end of the page by looking at the nearest [START_PAGE] or [END_PAGE] markers. If you can't see those markers, it is because the text corresponds to a chunk of text that is in the middle of a page.
+      
+      6. When referencing, you must always provide the text of the reference as it is in the file. If it has a mispelling, you must provide it like that. If it has a missing space, you must provide it like that.
     `;
 
     return prompt;
@@ -707,7 +721,7 @@ export class AiService implements OnModuleInit {
         inputs: { text: query },
       },
       fields: ['chunk_text', 'fileId', 'name'],
-      ...(lessThan250Words
+      /*...(lessThan250Words
         ? {
             rerank: {
               model: 'bge-reranker-v2-m3',
@@ -715,13 +729,13 @@ export class AiService implements OnModuleInit {
               topN: topN,
             },
           }
-        : {}),
+        : {}),*/
     });
 
     return response.result.hits;
   }
 
-  async generateFileName(content: string, fileName: string): Promise<string> {
+  async generateFileName(content: string | null): Promise<string> {
     try {
       // Prepare the prompt for generating a session name
       const prompt = `
@@ -743,10 +757,10 @@ export class AiService implements OnModuleInit {
       const name = result.text;
 
       // Limit the length and remove any quotes
-      return name ? name : fileName;
+      return name;
     } catch (error) {
       console.error('Error generating file name:', error);
-      return fileName;
+      return `File ${new Date().toLocaleDateString()}`;
     }
   }
 

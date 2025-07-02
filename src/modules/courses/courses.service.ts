@@ -62,7 +62,7 @@ export class CoursesService {
     {
       id: string;
       name: string;
-      content: string;
+      textByPages: string;
       type: string;
       originalName: string;
     }[]
@@ -84,7 +84,9 @@ export class CoursesService {
       return {
         id: file.id,
         name: file.name,
-        content: file.content,
+        textByPages: file.textByPages
+          ? Object.values(file.textByPages).join('\n')
+          : file.content || '',
         type: file.type,
         originalName: file.originalName,
       };

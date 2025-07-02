@@ -347,7 +347,9 @@ export class ChatService {
       fileContents = files.map((file) => ({
         id: file.id,
         name: file.name,
-        content: file.content || 'Content not available',
+        content: file.textByPages
+            ? Object.values(file.textByPages).join('\n')
+            : file.content || '',
         type: file.type.toString(), // Convert FileType enum to string
         originalName: file.originalName,
       }));
@@ -370,7 +372,9 @@ export class ChatService {
         ...files.map((file) => ({
           id: file.id,
           name: file.name,
-          content: file.content || 'Content not available',
+          content: file.textByPages
+            ? Object.values(file.textByPages).join('\n')
+            : file.content || '',
           type: file.type.toString(), // Convert FileType enum to string
           originalName: file.originalName,
         })),
@@ -393,7 +397,9 @@ export class ChatService {
         ...files.map((file) => ({
           id: file.id,
           name: file.name,
-          content: file.content || 'Content not available',
+          content: file.textByPages
+            ? Object.values(file.textByPages).join('\n')
+            : file.content || '',
           type: file.type.toString(), // Convert FileType enum to string
           originalName: file.originalName,
         })),
@@ -412,7 +418,9 @@ export class ChatService {
       newFileContents = files.flat().map((file) => ({
         id: file.id,
         name: file.name,
-        content: file.content || 'Content not available',
+        content: file.textByPages
+          ? Object.values(file.textByPages).join('\n')
+          : file.content || '',
         type: file.type.toString(), // Convert FileType enum to string
         originalName: file.originalName,
       }));
@@ -442,7 +450,7 @@ export class ChatService {
             ...course.map((file) => ({
               id: file.id,
               name: file.name,
-              content: file.content,
+              content: file.textByPages,
               type: file.type,
               originalName: file.originalName,
             })),
@@ -521,9 +529,9 @@ export class ChatService {
           ? extractedContent
               .map(
                 (file) =>
-                  `File name: ${file.name}\nContent: ${file.content}\nFile Id: ${file.fileId}`,
+                  `File name: ${file.name} Content: ${file.content} File Id: ${file.fileId}`,
               )
-              .join('\n\n')
+              .join('\n')
           : 'No extracted content from files provided for this message';
 
       // Convert array objects to strings for AI service

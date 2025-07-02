@@ -20,7 +20,7 @@ export class File {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ nullable: true })
   name: string;
 
   @Column({ type: 'enum', enum: FileType })
@@ -32,8 +32,8 @@ export class File {
   @Column({ type: 'int', default: 0 })
   size: number;
 
-  @Column({ type: 'jsonb', nullable: true })
-  textByPages: Record<string, string>;
+  @Column({ type: 'text', nullable: true })
+  textByPages: string;
 
   @Column({ type: 'boolean', default: false })
   textExtracted: boolean;
@@ -62,10 +62,10 @@ export class File {
   @ManyToOne(() => Folder, (folder) => folder.files, { nullable: true })
   folder: Folder;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   summary: string;
 
-  @Column({ type: 'text', array: true })
+  @Column({ type: 'text', array: true, nullable: true })
   chunks: string[];
 
   @Column()

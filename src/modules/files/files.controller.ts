@@ -176,18 +176,12 @@ export class FilesController {
     console.log('PDF Upload with folder ID:', folderId);
 
     try {
-      // Extract content from PDF file
-      const content = await this.filesService.extractContent(
-        file,
-        FileType.PDF,
-      );
-
       return this.filesService.uploadFile(
         courseId,
         req.user.id,
         file,
         FileType.PDF,
-        content,
+        null,
         folderId,
       );
     } catch (e: unknown) {
@@ -202,7 +196,7 @@ export class FilesController {
         req.user.id,
         file,
         FileType.PDF,
-        `Failed to extract content: ${errorMessage}`,
+        null,
         folderId,
       );
     }
@@ -258,7 +252,7 @@ export class FilesController {
         req.user.id,
         file,
         FileType.DOCX,
-        `Failed to extract content: ${errorMessage}`,
+        null,
         folderId,
       );
     }
@@ -311,7 +305,7 @@ export class FilesController {
         req.user.id,
         file,
         FileType.TEXT,
-        `Failed to extract content: ${errorMessage}`,
+        null, // No content extraction for text files
         folderId,
       );
     }
@@ -345,23 +339,25 @@ export class FilesController {
    */
   @Post(':id/save-text')
   async saveExtractedText(
-    @Request() req,
+    @Request() req: { user: UserPayload },
     @Param('id') id: string,
-    @Body() textData: { textByPages: Record<string, string> }
+    @Body() textData: { textByPages: string }
   ) {
     try {
       const result = await this.filesService.saveExtractedText(
         id,
-        req.user.userId,
+        req.user.id, // Fix: using req.user.id instead of req.user.userId
         textData.textByPages
       );
       
+      console.log('Backend: Text extraction saved successfully for file:', result.id);
       return {
         success: true,
         paperUpdated: result.id,
         pageCount: Object.keys(textData.textByPages).length
       };
     } catch (error) {
+      console.error('Backend: Error saving extracted text:', error);
       throw error;
     }
   }

@@ -338,7 +338,7 @@ export class FilesService {
     userId: string,
     fileData: Express.Multer.File,
     type: FileType,
-    content?: string,
+    content: string | null,
     folderId?: string | null,
   ): Promise<File> {
     // Check course exists and belongs to user
@@ -349,35 +349,6 @@ export class FilesService {
     if (totalSize + fileData.size > 100 * 1024 * 1024) {
       throw new BadRequestException('Course size limit of 100MB exceeded');
     }
-
-    // Extract content if not already provided
-    let extractedContent = content;
-    if (!extractedContent) {
-      try {
-        extractedContent = await this.extractContent(fileData, type);
-      } catch (error: unknown) {
-        console.error(`Error extracting content from ${type} file:`, error);
-        // Continue with upload even if extraction fails
-        const errorMessage =
-          typeof error === 'object' && error !== null && 'message' in error
-            ? String((error as Record<string, unknown>).message)
-            : 'Unknown error during content extraction';
-        // Continue with upload even if extraction fails
-        extractedContent = `Failed to extract content: ${errorMessage}`;
-      }
-    }
-
-    // Generate summary
-    const summary = await this.aiService.generateSummary(extractedContent);
-
-    // Create chunks
-    const chunks = this.createChunksWithOverlap(extractedContent);
-
-    // Create file name with AI
-    const fileName = await this.aiService.generateFileName(
-      extractedContent,
-      fileData.originalname,
-    );
     
     // Store the file on disk and create a physical path
     const uploadsDir = this.configService.get('UPLOADS_DIR') || 'uploads';
@@ -401,40 +372,25 @@ export class FilesService {
       },
     );
 
+    // Delete the file from the uploads directory after upload
+    try {
+      fs.unlinkSync(filePath);
+    } catch (err) {
+      console.error(`Failed to delete local file ${filePath}:`, err);
+    }
+
     // Create file entity
     const file = this.filesRepository.create({
-      name: fileName,
       originalName: fileData.originalname,
       type,
       path: virtualPath, // Store a virtual path instead of a physical file path
       size: fileData.size,
-      content: extractedContent,
-      summary,
-      chunks,
-      processed: true, // Mark as processed since we've extracted the content
       courseId,
       // Only set folderId if it's provided and not null
       ...(folderId ? { folderId } : {}),
     });
 
     const savedFile = await this.filesRepository.save(file);
-
-    // Upsert text
-    const namespace = this.pc
-      .index(
-        this.configService.get('PINECONE_INDEX_NAME') as string,
-        this.configService.get('PINECONE_INDEX_HOST') as string,
-      )
-      .namespace(userId);
-
-    await namespace.upsertRecords(
-      chunks.map((chunk, index) => ({
-        _id: `${file.id}-${index}`,
-        chunk_text: chunk,
-        fileId: file.id,
-        name: fileName,
-      })),
-    );
 
     return savedFile;
   }
@@ -817,22 +773,22 @@ export class FilesService {
    * @returns Array of text chunks with specified overlap
    */
   private createChunksWithOverlap(
-    text: string,
+    text: string | null,
     chunkSize: number = 400,
     overlapSize: number = 100,
   ): string[] {
     // Split the text into words
-    const words = text.split(/\s+/).filter((word) => word.length > 0);
+    const words = text?.split(/\s+/).filter((word) => word.length > 0);
 
     // If we don't have enough words for even one chunk, return the entire text as a single chunk
-    if (words.length <= chunkSize) {
-      return [text];
+    if (words && words.length <= chunkSize) {
+      return [text? words.join(' ') : ''];
     }
 
     const chunks: string[] = [];
     let startIndex = 0;
 
-    while (startIndex < words.length) {
+    while (words && startIndex < words.length) {
       // Calculate end index for this chunk (ensuring we don't go past the end of the array)
       const endIndex = Math.min(startIndex + chunkSize, words.length);
 
@@ -868,7 +824,7 @@ export class FilesService {
    * @param textByPages The extracted text organized by page numbers
    * @returns The updated research paper entity
    */
-  async saveExtractedText(id: string, userId: string, textByPages: Record<string, string>): Promise<File> {
+  async saveExtractedText(id: string, userId: string, textByPages: string): Promise<File> {
     // Get the research paper and verify ownership
     const paper = await this.findOne(id, userId);
     
@@ -876,12 +832,43 @@ export class FilesService {
       throw new NotFoundException(`Research paper with ID ${id} not found`);
     }
 
+    // Generate summary
+    const summary = await this.aiService.generateSummary(textByPages);
+
+    const chunks = this.createChunksWithOverlap(textByPages);
+
+    // Create file name with AI
+    const fileName = await this.aiService.generateFileName(
+      textByPages,
+    );
+
     // Update the paper with extracted text and mark as extracted
     let updatedPaper = await this.filesRepository.save({
       ...paper,
       textByPages,
+      summary,
+      chunks,
+      name: fileName,
+      processed: true, // Mark as processed since we've extracted the content
       textExtracted: true
     });
+
+    // Upsert text
+    const namespace = this.pc
+      .index(
+        this.configService.get('PINECONE_INDEX_NAME') as string,
+        this.configService.get('PINECONE_INDEX_HOST') as string,
+      )
+      .namespace(userId);
+
+    await namespace.upsertRecords(
+      chunks.map((chunk, index) => ({
+      _id: `${id}-${index}`,
+      chunk_text: chunk.replace(/\n/g, ''),
+      fileId: id,
+      name: fileName,
+      })),
+    );
 
     return updatedPaper;
   }
