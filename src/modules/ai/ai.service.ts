@@ -116,7 +116,7 @@ export class AiService implements OnModuleInit {
     fileContents: Array<{
       id: string;
       name: string;
-      content: string;
+      textByPages: string;
       type: string;
     }>,
     types: FlashcardType[],
@@ -130,7 +130,7 @@ export class AiService implements OnModuleInit {
         fileContents
           .map(
             (file, index) =>
-              `File ${index + 1}:\nFile name: ${file.name}\nFile content: ${file.content}\nFile id: ${file.id}`,
+              `File ${index + 1}:\nFile name: ${file.name}\nFile content: ${file.textByPages}\nFile id: ${file.id}`,
           )
           .join('\n\n');
 
@@ -280,7 +280,7 @@ export class AiService implements OnModuleInit {
     fileContents: Array<{
       id: string;
       name: string;
-      content: string;
+      textByPages: string;
       type: string;
     }>,
     questionCount: number,
@@ -293,7 +293,7 @@ export class AiService implements OnModuleInit {
         fileContents
           .map(
             (file, index) =>
-              `File ${index + 1}:\nFile name: ${file.name}\nFile content: ${file.content}\nFile id: ${file.id}`,
+              `File ${index + 1}:\nFile name: ${file.name}\nFile content: ${file.textByPages}\nFile id: ${file.id}`,
           )
           .join('\n\n');
 
@@ -678,13 +678,17 @@ export class AiService implements OnModuleInit {
       
       2. Sometimes, the text of the files are going to have the text of tables or graphs (from the original pdf from which the json file was extracted). This text can be at the start or end of a page, or even in the middle of it. When referencing a text from a file, you must not include the text of tables or graphs in the references. Before including a text in the references, you must verify that it does not contain information from tables or graphs. And if it does, remove it, without removing the gramatical consistency of the text.
       
-      3. In the text of the references, you must always include all the characters that are part of the text that you are planning on referencing. This includes parenthesis (the '(' and ')' characters), square brackets (the '[' and ']' characters), percentage signs (the '%' character), commas (the ',' character), periods (the '.' character), colons (the ':' character), semicolons (the ';' character), exclamation points (the '!' character), question marks (the '?' character), quotation marks (the '"' character), standard spaces between words (the ' ' character), and any other characters that are part of the text that you are planning on referencing, even if it doesn't make much sense.
+      3. In the text of the references, you must always include all the characters that are part of the text that you are planning on referencing. This includes parenthesis (the '(' and ')' characters), square brackets (the '[' and ']' characters), percentage signs (the '%' character), commas (the ',' character), periods (the '.' character), colons (the ':' character), semicolons (the ';' character), exclamation points (the '!' character), question marks (the '?' character), quotation marks (the '"' character), standard spaces between words, and even letters inside a word, (the ' ' character), and any other characters that are part of the text that you are planning on referencing, even if it doesn't make much sense.
       
       4. In the text of the references, don't include the subtitles of the sections of the paper. For example: Introduction, Methods, Results, Discussion, Conclusion, etc. You can distinguish these subtitles by the fact that they are words that are isolated, in the sense that they are not a part of a sentence.
       
       5. At the start or end of the pages, you may find text from the headers or footers of the file. You must not include this text in the references. This text normally can contain DOI numbers, URLs, Scientific Journal names, Author names, page numbers, and other metadata from the original file. When referencing text, always verify that the text you are referencing does not contain any of this information. To do this, you must check the start or end of the page by looking at the nearest [START_PAGE] or [END_PAGE] markers. If you can't see those markers, it is because the text corresponds to a chunk of text that is in the middle of a page.
       
-      6. When referencing, you must always provide the text of the reference as it is in the file. If it has a mispelling, you must provide it like that. If it has a missing space, you must provide it like that.
+      6. When referencing a text from a file, you must always provide the text of the reference as it is in the file context provided to you. If it has a mispelling, you must provide it like that. If it has a missing space, you must provide it like that. If it has a random number (that could be a numerical reference, for example) or a random character, you must provide it like that. If it has extra spaces between words or letters inside words, you must provide it like that. When extracting the text from the file context to use it in the references, you must not modify it in any way. You must provide the text exactly as it is in the file context provided to you.
+
+      7. When referencing a text from a file, you must never include the title of the file, the authors, the departments, the university, the date of publication, or any metadata that is not part of the main content of the file.
+
+      8. The text of each reference that you provide must be coherent and concise, but also complete. It must not correspond to multiple sections of the file, it should be self-contained. Meaning it contains enough information to be understood on it's own.
     `;
 
     return prompt;

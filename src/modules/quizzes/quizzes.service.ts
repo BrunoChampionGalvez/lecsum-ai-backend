@@ -204,13 +204,13 @@ export class QuizzesService {
     let fileContents: Array<{
       id: string;
       name: string;
-      content: string;
+      textByPages: string;
       type: string;
     }> = [];
     let newFileContents: Array<{
       id: string;
       name: string;
-      content: string;
+      textByPages: string;
       type: string;
     }> = [];
     // Get files from folders if folderIds are provided
@@ -224,7 +224,7 @@ export class QuizzesService {
       newFileContents = files.flat().map((file) => ({
         id: file.id,
         name: file.name,
-        content: file.content || 'Content not available',
+        textByPages: file.textByPages || 'Content not available',
         type: file.type.toString(), // Convert FileType enum to string
       }));
     }
