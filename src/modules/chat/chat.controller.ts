@@ -300,4 +300,40 @@ export class ChatController {
       }
     }
   }
+
+  @Post('search-reference-again/:id')
+  /**
+   * Searches for a specific text in the context of a chat message.
+   * @param body - Contains the text to search, context, and chat message.
+   * @param req - The request object containing user context.
+   * @param id - The ID of the chat session.
+   * @returns The search result as a string.
+   * @throws InternalServerErrorException if an error occurs during the search.
+   */
+  async searchReferenceAgain(
+    @Body() body: { textToSearch: string, chatMessage: string },
+    @Request() req: { user: AuthenticatedUserContext },
+    @Param('id') id: string,
+  ): Promise<string> {
+    console.log(
+      `Searching reference again for user ${req.user.id} with text: "${body.textToSearch}"`,
+    );
+    try {
+      const result = await this.chatService.searchReferenceAgain(
+        id,
+        body.chatMessage,
+        body.textToSearch,
+      );
+      console.log(
+        `Search result for user ${req.user.id}: "${result.substring(0, 50)}..."`,
+      );
+      return result;
+    } catch (error: unknown) {
+      console.error(
+        `Error searching reference again for user ${req.user.id}:`,
+        error,
+      );
+      throw error; // Let the global error handler catch this
+    }
+  }
 }

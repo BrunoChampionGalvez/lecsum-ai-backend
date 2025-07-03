@@ -347,9 +347,7 @@ export class ChatService {
       fileContents = files.map((file) => ({
         id: file.id,
         name: file.name,
-        content: file.textByPages
-            ? Object.values(file.textByPages).join('\n')
-            : file.content || '',
+        content: file.textByPages || 'No content available',
         type: file.type.toString(), // Convert FileType enum to string
         originalName: file.originalName,
       }));
@@ -372,9 +370,7 @@ export class ChatService {
         ...files.map((file) => ({
           id: file.id,
           name: file.name,
-          content: file.textByPages
-            ? Object.values(file.textByPages).join('\n')
-            : file.content || '',
+          content: file.textByPages || 'No content available',
           type: file.type.toString(), // Convert FileType enum to string
           originalName: file.originalName,
         })),
@@ -397,9 +393,7 @@ export class ChatService {
         ...files.map((file) => ({
           id: file.id,
           name: file.name,
-          content: file.textByPages
-            ? Object.values(file.textByPages).join('\n')
-            : file.content || '',
+          content: file.textByPages || 'No content available',
           type: file.type.toString(), // Convert FileType enum to string
           originalName: file.originalName,
         })),
@@ -418,9 +412,7 @@ export class ChatService {
       newFileContents = files.flat().map((file) => ({
         id: file.id,
         name: file.name,
-        content: file.textByPages
-          ? Object.values(file.textByPages).join('\n')
-          : file.content || '',
+        content: file.textByPages || 'No content available',
         type: file.type.toString(), // Convert FileType enum to string
         originalName: file.originalName,
       }));
@@ -777,6 +769,7 @@ export class ChatService {
       const aiMessage = this.chatMessagesRepository.create({
         role: MessageRole.AI,
         content: finalContent,
+        context: context,
         citations: finalCitations,
         chatSessionId: sessionId,
       });
@@ -999,5 +992,55 @@ export class ChatService {
 
     // Delete the session
     await this.chatSessionsRepository.remove(session);
+  }
+
+  
+  async searchReferenceAgain(
+    chatMessageId: string,
+    chatMessage: string,
+    textToSearch: string,
+  ): Promise<string> {
+    console.log(`Searching for reference in chat message: ${chatMessage}`);
+    
+    // Use AI service to search for the reference
+    try {
+      const oldChatMessage = await this.chatMessagesRepository.findOne({
+        where: { id: chatMessageId },
+        select: ['context'],
+      });
+
+      if (!oldChatMessage) {
+        throw new NotFoundException(`Chat message with ID ${chatMessageId} not found`);
+      }
+
+      const response = await this.aiService.searchReferenceAgain(textToSearch, oldChatMessage.context);
+      console.log(`AI search response: ${response}`);
+      // Escape newlines in textToSearch for literal replacement
+      const escapedTextToSearch = textToSearch.replace(/\n/g, '\\n');
+      const escapedResponse = response.replace(/\n/g, '\\n');
+      const newChatMessage = chatMessage.replace(
+        escapedTextToSearch,
+        escapedResponse, // Replace the original text with the AI's response
+      );
+      const updatedMessage = await this.chatMessagesRepository.save({
+        id: chatMessageId,
+        content: newChatMessage,
+      });
+      return updatedMessage.content;
+    } catch (error: unknown) {
+      console.error('Error searching reference:', error);
+      let errorMessage = 'Unknown error during reference search';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (
+        typeof error === 'object' &&
+        error !== null &&
+        'message' in error &&
+        typeof (error as { message: unknown }).message === 'string'
+      ) {
+        errorMessage = (error as { message: string }).message;
+      }
+      throw new BadRequestException(`Failed to search reference: ${errorMessage}`);
+    }
   }
 }

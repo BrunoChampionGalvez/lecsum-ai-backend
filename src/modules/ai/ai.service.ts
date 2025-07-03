@@ -1,4 +1,4 @@
-import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
+import { Injectable, Inject, OnModuleInit, InternalServerErrorException } from '@nestjs/common';
 import { join } from 'path';
 import { promises as fs } from 'fs';
 
@@ -30,7 +30,8 @@ export class AiService implements OnModuleInit {
   private _Type: any;
   private wrapperPath: string;
   private geminiModels: {
-    flashPreview: string;
+    pro: string,
+    flash: string;
     flashLite: string;
   };
   private pc: Pinecone;
@@ -42,8 +43,9 @@ export class AiService implements OnModuleInit {
   ) {
     // this.gemini initialization moved to onModuleInit
     this.geminiModels = {
-      flashPreview: 'gemini-2.5-flash-preview-05-20',
-      flashLite: 'gemini-2.0-flash-lite',
+      pro: 'gemini-2.5-pro',
+      flash: 'gemini-2.5-flash',
+      flashLite: 'gemini-2.5-flash-lite-preview-06-17',
     };
     this.pc = new Pinecone({
       apiKey: this.configService.get('PINECONE_API_KEY') as string,
@@ -147,7 +149,7 @@ export class AiService implements OnModuleInit {
       `;
 
       const response = await this.gemini.models.generateContent({
-        model: this.geminiModels.flashPreview,
+        model: this.geminiModels.flash,
         contents: prompt,
         config: {
           systemInstruction: `Generate a set of educational flashcards based on the content of files provided. If you find that the content is not enough to generate the number of flashcards requested, you should generate a smaller and reasonable number of flashcards that you can generate based on the amount of information you receive. Don't use any information from your general knowledge to generate flashcards. ONLY return the JSON array of flashcards. The things been evaluated in the flashcards must be as close as possible to the things university professors usually evaluate in their students, their purpose is to help students practice for university exams. Don't evaluate superficial or unimportant things (like irrelevant exact amounts or numbers, that are usually not important in the context of the student university formation), evaluate things that demand important knowledge and undestanding of the study material. 
@@ -306,7 +308,7 @@ export class AiService implements OnModuleInit {
       `;
 
       const response = await this.gemini.models.generateContent({
-        model: this.geminiModels.flashPreview,
+        model: this.geminiModels.flash,
         contents: prompt,
         config: {
           systemInstruction: `Generate a set of educational quiz questions based on the content of files provided. If you find that the content is not enough to generate the number of questions requested, you should generate a smaller and reasonable number of questions that you can generate based on the amount of information you receive. Don't use any information from your general knowledge to generate questions. ONLY return the JSON array of questions. The things been evaluated in the questions must be as close as possible to the things university professors usually evaluate in their students, their purpose is to help students practice for university exams. Don't evaluate superficial or unimportant things (like irrelevant exact amounts or numbers, that are usually not important in the context of the student university formation), evaluate things that demand important knowledge and undestanding of the study material. 
@@ -465,7 +467,7 @@ export class AiService implements OnModuleInit {
       );
 
       const response = await this.gemini.models.generateContentStream({
-        model: this.geminiModels.flashPreview,
+        model: this.geminiModels.flash,
         contents: formattedMessages,
         config: {
           systemInstruction: systemPrompt,
@@ -837,5 +839,44 @@ export class AiService implements OnModuleInit {
 
   countWords(text: string): number {
     return text.split(/\s+/).filter((word) => word.length > 0).length;
+  }
+
+  async searchReferenceAgain(textToSearch: string, context: string): Promise<string> {
+    try {
+      const response = await this.gemini.models.generateContent({
+        model: this.geminiModels.pro,
+        contents: `Specific text to search for: "${textToSearch}"
+        
+        Files context: ${context}`,
+        config: {
+          systemInstruction: `You have to do the following tasks in this exact order: 
+
+1.  Search for a specific text inside the Files context. The text you are searching for might not be an exact match to what is in the Files context. It could have minor variations in wording, characters, punctuation, or spacing.
+
+2.  If you find the specific text, but it is split into two parts by other content (such as information that could have been extracted from a table, graph, or other unrelated text, or the [START_PAGE] and [END_PAGE] markers), you must identify both parts. After identifying both parts, you must return ONLY the longer of the two parts. Do not include the content that was in the middle.
+
+3.  If you find the specific text and it is not split, but contains minor variations (e.g., different punctuation, a few different words or characters), return it exactly as it appears in the Files context.
+
+4.  If you do not find the specific text in the Files context (neither whole, with minor variations, nor split), then you must return the specific text exactly as you received it.`,
+          temperature: 0.2,
+          maxOutputTokens: 8000,
+          thinkingConfig: {
+            thinkingBudget: 10000,
+          },
+        },
+      });
+
+      let result = response.text;
+      return result ? result : textToSearch; // Return the original text if no result found
+    } catch (error) {
+      console.error(
+        `Error searching reference again: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+      );
+      throw new InternalServerErrorException(
+        `Error searching reference again: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
+    }
   }
 }

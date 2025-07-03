@@ -58,4 +58,7 @@ export class ChatMessage {
 
   @ManyToOne(() => ChatSession, (chatSession) => chatSession.messages)
   chatSession: ChatSession;
+
+  @Column({ type: 'text', nullable: true })
+  context: string; // Optional context for the message, e.g. search query or reference
 }
