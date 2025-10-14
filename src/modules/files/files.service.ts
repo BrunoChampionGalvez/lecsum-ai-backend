@@ -18,7 +18,8 @@ import * as mammoth from 'mammoth';
 import { AiService } from '../ai/ai.service';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { ConfigService } from '@nestjs/config';
-import axios, { Axios } from 'axios';
+import { Storage } from '@google-cloud/storage';
+
 
 // Keep readFileAsync for backward compatibility with existing code
 const readFileAsync = promisify(fs.readFile);
@@ -27,6 +28,7 @@ const pdfExtract = new PDFExtract();
 @Injectable()
 export class FilesService {
   private pc: Pinecone;
+  private storage: Storage;
 
   constructor(
     @InjectRepository(File)
@@ -38,6 +40,14 @@ export class FilesService {
   ) {
     this.pc = new Pinecone({
       apiKey: this.configService.get('PINECONE_API_KEY') as string,
+    });
+    // Initialize once in constructor
+    this.storage = new Storage({
+      projectId: this.configService.get('GCS_PROJECT_ID'),
+      credentials: {
+        client_email: this.configService.get('GCS_CLIENT_EMAIL'),
+        private_key: this.configService.get('GCS_PRIVATE_KEY').replace(/\\n/g, '\n'),
+      }
     });
   }
 
@@ -390,17 +400,11 @@ export class FilesService {
     const virtualPath = filePath;
 
     // Upload the file to Google Cloud Storage
-    await axios.post(
-      `https://storage.googleapis.com/upload/storage/v1/b/${this.configService.get('GCS_BUCKET_NAME')}/o?uploadType=media&name=${encodeURIComponent(virtualPath)}`,
-      fileData.buffer, // send the binary data directly
-      {
-      headers: {
-        'Authorization': `Bearer ${this.configService.get('GCS_ACCESS_TOKEN')}`,
-        'Content-Type': fileData.mimetype,
-      },
-      },
-    );
 
+    // Upload file
+    const bucket = this.storage.bucket(this.configService.get('GCS_BUCKET_NAME') as string);
+    await bucket.file(virtualPath).save(fileData.buffer);
+    
     // Create file entity
     const file = this.filesRepository.create({
       name: fileName,
